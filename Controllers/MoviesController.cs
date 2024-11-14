@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -30,9 +31,15 @@ namespace MovieTheaterWS_v2.Controllers
 
         // GET api/<MoviesController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        // original line
+        // public string Get(int id)
+        public async Task<GenericResponse<Movie>> Get(int id)
         {
-            return "value";
+            //return "value";
+            //return await _context.Movies.FindAsync(id);
+            var genResponse = new GenericResponse<Movie>();
+            genResponse.Data = await _context.Movies.FindAsync(id);
+            return genResponse;
         }
 
         // POST api/<MoviesController>
