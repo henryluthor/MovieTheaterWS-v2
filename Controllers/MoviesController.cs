@@ -39,6 +39,10 @@ namespace MovieTheaterWS_v2.Controllers
             //return await _context.Movies.FindAsync(id);
             var genResponse = new GenericResponse<Movie>();
             genResponse.Data = await _context.Movies.FindAsync(id);
+            if(genResponse.Data == null)
+            {
+                genResponse.Message = "Movie not found.";
+            }
             return genResponse;
         }
 

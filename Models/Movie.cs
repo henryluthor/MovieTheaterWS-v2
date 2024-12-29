@@ -20,4 +20,9 @@ public partial class Movie
     public int? Runtime { get; set; }
 
     public string? Genre { get; set; }
+
+    /// <summary>
+    /// Movie id from www.imdb.com
+    /// </summary>
+    public string? IMDBId { get; set; }
 }
