@@ -24,5 +24,5 @@ public partial class Movie
     /// <summary>
     /// Movie id from www.imdb.com
     /// </summary>
-    public string? IMDBId { get; set; }
+    public string? Imdbid { get; set; }
 }
