@@ -36,9 +36,9 @@ namespace MovieTheaterWS_v2.Controllers
 
         // POST api/<LoginController>
         [HttpPost]
-        public async Task<GenericResponse<string>> Post([FromBody] LoginRequest loginRequest)
+        public async Task<GenericResponse<SystemUser>> Post([FromBody] LoginRequest loginRequest)
         {
-            GenericResponse<string> genericResponse = new GenericResponse<string>();
+            GenericResponse<SystemUser> genericResponse = new GenericResponse<SystemUser>();
             
             // Check if email exist in DB
             var systemUser = new SystemUser();
@@ -55,6 +55,7 @@ namespace MovieTheaterWS_v2.Controllers
                 {
                     // Access granted
                     genericResponse.Message = "Login successfull.";
+                    genericResponse.Data = systemUser;
                 }
                 else
                 {
