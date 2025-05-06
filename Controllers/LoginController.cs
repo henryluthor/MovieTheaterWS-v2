@@ -36,36 +36,46 @@ namespace MovieTheaterWS_v2.Controllers
 
         // POST api/<LoginController>
         [HttpPost]
-        public async Task<GenericResponse<SystemUser>> Post([FromBody] LoginRequest loginRequest)
+        public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequest loginRequest)
         {
-            GenericResponse<SystemUser> genericResponse = new GenericResponse<SystemUser>();
+            GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
             
             // Check if email exist in DB
             var systemUser = new SystemUser();
             systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);
+
+            LoginResponse loginResponse = new LoginResponse();
 
             if (systemUser != null)
             {
                 // Hash received password and check if it matches the hash in DB
                 SHA512 hashSvc = SHA512.Create();
                 byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(loginRequest.Password));
-                string hashString = BitConverter.ToString(hash).Replace("-", "");
+                string hashString = BitConverter.ToString(hash).Replace("-", "");                
 
                 if (systemUser.PasswordHash == hashString)
                 {
-                    // Access granted
+                    // Access granted                    
+                    loginResponse.Success = true;
+                    loginResponse.FirstName = systemUser.FirstName;
+                    loginResponse.LastName = systemUser.LastName;
+                    loginResponse.Email = systemUser.Email;
+                    loginResponse.IdRole = systemUser.IdRole;
+                    
                     genericResponse.Message = "Login successfull.";
-                    genericResponse.Data = systemUser;
+                    genericResponse.Data = loginResponse;
                 }
                 else
                 {
                     // Incorrect user or password
+                    loginResponse.Success = false;
                     genericResponse.Message = "Incorrect user or password.";
                 }
             }
             else
             {
                 // User not registered
+                loginResponse.Success = false;
                 //genericResponse.Message = "User not registered.";
                 genericResponse.Message = "Incorrect user or password.";
             }
