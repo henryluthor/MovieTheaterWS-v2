@@ -63,7 +63,6 @@ namespace MovieTheaterWS_v2.Controllers
                     loginResponse.IdRole = systemUser.IdRole;
                     
                     genericResponse.Message = "Login successfull.";
-                    genericResponse.Data = loginResponse;
                 }
                 else
                 {
@@ -79,6 +78,8 @@ namespace MovieTheaterWS_v2.Controllers
                 //genericResponse.Message = "User not registered.";
                 genericResponse.Message = "Incorrect user or password.";
             }
+
+            genericResponse.Data = loginResponse;
 
             return genericResponse;
         }
