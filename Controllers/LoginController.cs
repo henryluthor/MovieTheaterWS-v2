@@ -48,7 +48,7 @@ namespace MovieTheaterWS_v2.Controllers
 
             if (systemUser != null)
             {
-                // Hash received password and check if it matches the hash in DB
+                // Hash the received password and check if it matches the hash in DB
                 SHA512 hashSvc = SHA512.Create();
                 byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(loginRequest.Password));
                 string hashString = BitConverter.ToString(hash).Replace("-", "");                
