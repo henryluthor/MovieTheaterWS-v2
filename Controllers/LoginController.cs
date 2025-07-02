@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -14,10 +17,12 @@ namespace MovieTheaterWS_v2.Controllers
     public class LoginController : ControllerBase
     {
         private readonly MovietheaterContext _context;
+        private readonly IConfiguration _configuration;
 
-        public LoginController(MovietheaterContext context)
+        public LoginController(MovietheaterContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
         }
 
         // GET: api/<LoginController>
@@ -44,7 +49,7 @@ namespace MovieTheaterWS_v2.Controllers
             var systemUser = new SystemUser();
             systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);
 
-            LoginResponse loginResponse = new LoginResponse();
+            LoginResponse loginResponse = new LoginResponse(_configuration);
 
             if (systemUser != null)
             {
@@ -55,12 +60,23 @@ namespace MovieTheaterWS_v2.Controllers
 
                 if (systemUser.PasswordHash == hashString)
                 {
-                    // Access granted                    
+                    // Access granted
+                    string username;
+                    if(systemUser.FirstName != null)
+                    {
+                        username = systemUser.FirstName;
+                    }
+                    else
+                    {
+                        username = "Generic name";
+                    }
+
                     loginResponse.Success = true;
                     loginResponse.FirstName = systemUser.FirstName;
                     loginResponse.LastName = systemUser.LastName;
                     loginResponse.Email = systemUser.Email;
                     loginResponse.IdRole = systemUser.IdRole;
+                    loginResponse.SecretKey = loginResponse.GenerateToken(systemUser.Id.ToString(), username);
                     
                     genericResponse.Message = "Login successfull.";
                 }
@@ -95,5 +111,6 @@ namespace MovieTheaterWS_v2.Controllers
         public void Delete(int id)
         {
         }
+
     }
 }

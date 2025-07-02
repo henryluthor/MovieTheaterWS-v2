@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,25 @@ builder.Services.AddSwaggerGen();
 //builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer("Server=LAPTOP-R601H3RA\\SQLEXPRESS;Database=movietheater;Trusted_Connection=true;TrustedServerCertificate=true;Persist Security Info=true"));
 builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer("Server=LAPTOP-R601H3RA;Database=movietheater;Trusted_Connection=true;TrustedServerCertificate=true;Persist Security Info=true"));
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = "JwtBearer";
+    options.DefaultChallengeScheme = "JwtBearer";
+})
+.AddJwtBearer("JwtBearer", options =>
+{
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = "myIssuer",
+        ValidAudience = "myAudience",
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysecretkey"))
+    };
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -24,6 +45,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseAuthentication();
 
 app.UseAuthorization();
 
