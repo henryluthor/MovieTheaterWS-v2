@@ -1,10 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -76,7 +73,7 @@ namespace MovieTheaterWS_v2.Controllers
                     loginResponse.LastName = systemUser.LastName;
                     loginResponse.Email = systemUser.Email;
                     loginResponse.IdRole = systemUser.IdRole;
-                    loginResponse.SecretKey = loginResponse.GenerateToken(systemUser.Id.ToString(), username);
+                    loginResponse.Token = loginResponse.GenerateToken(systemUser.Id.ToString(), username);
                     
                     genericResponse.Message = "Login successfull.";
                 }
