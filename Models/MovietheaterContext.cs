@@ -15,11 +15,13 @@ public partial class MovietheaterContext : DbContext
     {
     }
 
+    public virtual DbSet<Complex> Complexes { get; set; }
+
     public virtual DbSet<Movie> Movies { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<SystemUser> Systemusers { get; set; }
+    public virtual DbSet<Systemuser> Systemusers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -28,6 +30,17 @@ public partial class MovietheaterContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AI");
+
+        modelBuilder.Entity<Complex>(entity =>
+        {
+            entity.ToTable("Complex");
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Name)
+                .HasMaxLength(50)
+                .IsUnicode(false)
+                .HasColumnName("name");
+        });
 
         modelBuilder.Entity<Movie>(entity =>
         {
@@ -61,7 +74,7 @@ public partial class MovietheaterContext : DbContext
                 .HasColumnName("description");
         });
 
-        modelBuilder.Entity<SystemUser>(entity =>
+        modelBuilder.Entity<Systemuser>(entity =>
         {
             entity.ToTable("Systemuser");
 

@@ -43,7 +43,7 @@ namespace MovieTheaterWS_v2.Controllers
             GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
             
             // Check if email exist in DB
-            var systemUser = new SystemUser();
+            var systemUser = new Systemuser();
             systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);
 
             LoginResponse loginResponse = new LoginResponse(_configuration);

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace MovieTheaterWS_v2.Models;
 
-public partial class SystemUser
+public partial class Systemuser
 {
     public int Id { get; set; }
 

@@ -20,16 +20,16 @@ namespace MovieTheaterWS_v2.Controllers
 
         // GET: api/<SystemUserController>
         [HttpGet]
-        public async Task<List<SystemUser>> Get()
+        public async Task<List<Systemuser>> Get()
         {
             return await _context.Systemusers.ToListAsync();
         }
 
         // POST: api/<SystemUserController>
         [HttpPost]
-        public async Task<GenericResponse<SystemUser>> Post(SystemUserToPost systemUserToPost)
+        public async Task<GenericResponse<Systemuser>> Post(SystemUserToPost systemUserToPost)
         {
-            var genRensponse = new GenericResponse<SystemUser>();
+            var genRensponse = new GenericResponse<Systemuser>();
 
             var allSystemUsers = from s in _context.Systemusers select s;
             allSystemUsers = allSystemUsers.Where(s => s.Email == systemUserToPost.Email);
@@ -45,7 +45,7 @@ namespace MovieTheaterWS_v2.Controllers
                 SHA512 hashSvc = SHA512.Create();
                 byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
 
-                SystemUser systemUser = new SystemUser();
+                Systemuser systemUser = new Systemuser();
                 systemUser.Email = systemUserToPost.Email;
                 systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
                 systemUser.IdRole = systemUserToPost.IdRole;

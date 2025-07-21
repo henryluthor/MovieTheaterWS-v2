@@ -9,5 +9,5 @@ public partial class Role
 
     public string Description { get; set; } = null!;
 
-    public virtual ICollection<SystemUser> Systemusers { get; set; } = new List<SystemUser>();
+    public virtual ICollection<Systemuser> Systemusers { get; set; } = new List<Systemuser>();
 }
