@@ -17,6 +17,8 @@ public partial class MovietheaterContext : DbContext
 
     public virtual DbSet<Complex> Complexes { get; set; }
 
+    public virtual DbSet<ComplexMovie> ComplexMovies { get; set; }
+
     public virtual DbSet<Movie> Movies { get; set; }
 
     public virtual DbSet<Role> Roles { get; set; }
@@ -33,19 +35,39 @@ public partial class MovietheaterContext : DbContext
 
         modelBuilder.Entity<Complex>(entity =>
         {
+            entity.HasKey(e => e.IdComplex);
+
             entity.ToTable("Complex");
 
-            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.IdComplex).HasColumnName("idComplex");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("name");
         });
 
+        modelBuilder.Entity<ComplexMovie>(entity =>
+        {
+            entity
+                .HasNoKey()
+                .ToTable("ComplexMovie");
+
+            entity.Property(e => e.IdComplex).HasColumnName("idComplex");
+            entity.Property(e => e.IdMovie).HasColumnName("idMovie");
+
+            entity.HasOne(d => d.IdMovieNavigation).WithMany()
+                .HasForeignKey(d => d.IdMovie)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_ComplexMovie_Movie");
+        });
+
         modelBuilder.Entity<Movie>(entity =>
         {
+            entity.HasKey(e => e.IdMovie);
+
             entity.ToTable("Movie");
 
+            entity.Property(e => e.IdMovie).HasColumnName("idMovie");
             entity.Property(e => e.Genre)
                 .HasMaxLength(50)
                 .IsUnicode(false);

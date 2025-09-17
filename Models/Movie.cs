@@ -5,7 +5,7 @@ namespace MovieTheaterWS_v2.Models;
 
 public partial class Movie
 {
-    public int Id { get; set; }
+    public int IdMovie { get; set; }
 
     public string Title { get; set; } = null!;
 
