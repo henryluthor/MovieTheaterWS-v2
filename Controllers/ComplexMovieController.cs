@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Models;
 
@@ -31,18 +32,17 @@ namespace MovieTheaterWS_v2.Controllers
         //    return await allComplexMovies.Where(cm => cm.IdComplex == idComplex).ToListAsync();
         //}
 
-        // This method need protection against SQL injection
+
         [HttpGet("{idComplex}")]
         public async Task<List<Movie>> GetMoviesByComplex(int idComplex)
         {
-            //int idComplexToSearch = idComplex;
             var moviesByComplex = await _context.Movies.FromSqlInterpolated(
                 $@"select m.idMovie, m.Title, m.Year, m.Runtime, m.Genre, m.IMDBId 
 from ComplexMovie cm 
 join Movie m on cm.idMovie = m.idMovie 
 where cm.idComplex = {idComplex}"
                 ).ToListAsync();
-            
+
             return moviesByComplex;
         }
     }
