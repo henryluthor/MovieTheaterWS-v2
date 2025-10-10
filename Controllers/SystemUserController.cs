@@ -46,6 +46,8 @@ namespace MovieTheaterWS_v2.Controllers
                 byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
 
                 Systemuser systemUser = new Systemuser();
+                systemUser.FirstName = systemUserToPost.FirstName;
+                systemUser.LastName = systemUserToPost.LastName;
                 systemUser.Email = systemUserToPost.Email;
                 systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
                 systemUser.IdRole = systemUserToPost.IdRole;
