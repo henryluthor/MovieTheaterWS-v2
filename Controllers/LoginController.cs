@@ -22,31 +22,17 @@ namespace MovieTheaterWS_v2.Controllers
             _configuration = configuration;
         }
 
-        // GET: api/<LoginController>
-        [HttpGet]
-        public IEnumerable<string> Get()
-        {
-            return new string[] { "value1", "value2" };
-        }
-
-        // GET api/<LoginController>/5
-        [HttpGet("{id}")]
-        public string Get(int id)
-        {
-            return "value";
-        }
 
         // POST api/<LoginController>
         [HttpPost]
         public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequest loginRequest)
         {
             GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
-            
+            LoginResponse loginResponse = new LoginResponse(_configuration);
+
             // Check if email exist in DB
             var systemUser = new Systemuser();
-            systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);
-
-            LoginResponse loginResponse = new LoginResponse(_configuration);
+            systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);            
 
             if (systemUser != null)
             {
@@ -88,25 +74,12 @@ namespace MovieTheaterWS_v2.Controllers
             {
                 // User not registered
                 loginResponse.Success = false;
-                //genericResponse.Message = "User not registered.";
                 genericResponse.Message = "Incorrect user or password.";
             }
 
             genericResponse.Data = loginResponse;
 
             return genericResponse;
-        }
-
-        // PUT api/<LoginController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody]string value)
-        {
-        }
-
-        // DELETE api/<LoginController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
 
     }

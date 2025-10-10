@@ -33,30 +33,37 @@ namespace MovieTheaterWS_v2.Controllers
 
             var allSystemUsers = from s in _context.Systemusers select s;
             allSystemUsers = allSystemUsers.Where(s => s.Email == systemUserToPost.Email);
-            //List<Systemuser> systemUsersFiltered = await allSystemUsers.ToListAsync();
 
+            // Check if email is already registered
             if (allSystemUsers.Any())
             {
                 genRensponse.Message = "That email is registered already.";
             }
             else
             {
-                // Hash user password
-                SHA512 hashSvc = SHA512.Create();
-                byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
+                try
+                {
+                    // Hash user password
+                    SHA512 hashSvc = SHA512.Create();
+                    byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
 
-                Systemuser systemUser = new Systemuser();
-                systemUser.FirstName = systemUserToPost.FirstName;
-                systemUser.LastName = systemUserToPost.LastName;
-                systemUser.Email = systemUserToPost.Email;
-                systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
-                systemUser.IdRole = systemUserToPost.IdRole;
+                    Systemuser systemUser = new Systemuser();
+                    systemUser.FirstName = systemUserToPost.FirstName;
+                    systemUser.LastName = systemUserToPost.LastName;
+                    systemUser.Email = systemUserToPost.Email;
+                    systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
+                    systemUser.IdRole = systemUserToPost.IdRole;
 
-                _context.Systemusers.Add(systemUser);
-                await _context.SaveChangesAsync();
+                    _context.Systemusers.Add(systemUser);
+                    await _context.SaveChangesAsync();
 
-                genRensponse.Message = "User registered successfully.";
-                genRensponse.Data = systemUser;
+                    genRensponse.Message = "User registered successfully.";
+                    genRensponse.Data = systemUser;
+                }
+                catch(Exception ex)
+                {
+                    genRensponse.Message = "There was an error while trying to register the user. " + ex.Message;
+                }
             }
 
             return genRensponse;
