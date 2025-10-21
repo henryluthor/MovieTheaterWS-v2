@@ -14,7 +14,8 @@ builder.Services.AddSwaggerGen();
 
 //new
 //builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer("Server=LAPTOP-R601H3RA\\SQLEXPRESS;Database=movietheater;Trusted_Connection=true;TrustedServerCertificate=true;Persist Security Info=true"));
-builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer("Server=LAPTOP-R601H3RA;Database=movietheater;Trusted_Connection=true;TrustedServerCertificate=true;Persist Security Info=true"));
+//builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer("Server=LAPTOP-R601H3RA;Database=movietheater;Trusted_Connection=true;TrustedServerCertificate=true;Persist Security Info=true"));
+builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer("Server=HENRYLAPTOP\\SQLEXPRESS;Database=movietheater;Trusted_Connection=true;TrustedServerCertificate=true;Persist Security Info=true"));
 
 builder.Services.AddAuthentication(options =>
 {
