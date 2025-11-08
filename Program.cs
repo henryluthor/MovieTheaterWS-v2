@@ -15,26 +15,50 @@ builder.Services.AddSwaggerGen();
 //new
 builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = "JwtBearer";
+//    options.DefaultChallengeScheme = "JwtBearer";
+//})
+//.AddJwtBearer("JwtBearer", options =>
+//{
+//    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+//    {
+//        ValidateIssuer = true,
+//        ValidateAudience = true,
+//        ValidateLifetime = true,
+//        ValidateIssuerSigningKey = true,
+//        ValidIssuer = "myIssuer",
+//        ValidAudience = "myAudience",
+//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysecretkey"))
+//    };
+//});
+
 builder.Services.AddAuthentication(options =>
 {
-    options.DefaultAuthenticateScheme = "JwtBearer";
-    options.DefaultChallengeScheme = "JwtBearer";
+    options.DefaultAuthenticateScheme = "Cookies";
+    options.DefaultChallengeScheme = "Cookies";
 })
-.AddJwtBearer("JwtBearer", options =>
+.AddCookie("Cookies", options =>
 {
-    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowCredentials", corsPolicyBuilder =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
-        ValidIssuer = "myIssuer",
-        ValidAudience = "myAudience",
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysecretkey"))
-    };
+        corsPolicyBuilder.WithOrigins("http://localhost:3000")
+        .AllowCredentials()
+        .AllowAnyMethod()
+        .AllowAnyHeader();
+    }
+    );
 });
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -47,14 +71,26 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+// Set requests pipeline
 app.UseAuthentication();
-
 app.UseAuthorization();
 
+// Add routes and controllers
 app.MapControllers();
 
-//new
-app.UseCors(policy => policy.AllowAnyOrigin()
-    .AllowAnyHeader());
+
+//app.UseCors(policy => policy.AllowAnyOrigin()
+//    .AllowAnyHeader());
+
+app.UseCors("AllowCredentials");
+
+// New line
+//app.Use(async (contex, next) =>
+//{
+//    contex.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:3000");
+//    contex.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
+//    await next();
+//});
+
 
 app.Run();
