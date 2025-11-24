@@ -39,17 +39,20 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = "Cookies";
     options.DefaultChallengeScheme = "Cookies";
 })
-.AddCookie("Cookies", options =>
-{
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
+//.AddCookie("Cookies", options =>
+//{
+//    options.Cookie.HttpOnly = true;
+//    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+//    //options.Cookie.SameSite = SameSiteMode.None;
+//})
+;
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowCredentials", corsPolicyBuilder =>
     {
-        corsPolicyBuilder.WithOrigins("http://localhost:3000")
+        //corsPolicyBuilder.WithOrigins("http://localhost:3000")
+        corsPolicyBuilder.WithOrigins("https://localhost:3000")
         .AllowCredentials()
         .AllowAnyMethod()
         .AllowAnyHeader();

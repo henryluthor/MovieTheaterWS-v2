@@ -40,7 +40,7 @@ namespace MovieTheaterWS_v2.Classes
                 issuer: _configuration.GetValue<string>("JwtBearerData:Issuer"),
                 audience: _configuration.GetValue<string>("JwtBearerData:Audience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(1),
+                expires: DateTime.UtcNow.AddMinutes(2),
                 signingCredentials: creds
                 );
 
