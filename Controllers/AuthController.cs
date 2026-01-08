@@ -127,7 +127,7 @@ namespace MovieTheaterWS_v2.Controllers
         [HttpGet("authenticated")]
         public IActionResult Authenticated()
         {
-            //var token = Request.Cookies["token"];
+            // var token = Request.Cookies["token"]; // this is another way of doing the following line
             var token = HttpContext.Request.Cookies["token"];
 
             if(token == null)
@@ -175,16 +175,6 @@ namespace MovieTheaterWS_v2.Controllers
                 return Unauthorized();
             }
 
-            //if(token != null)
-            //{
-            //    var x = token;
-            //    // Verify token
-            //    return Ok(new { authenticated = true });
-            //}
-            //else
-            //{
-            //    return Ok(new { authenticated = false });
-            //}
         }
     }
 }
