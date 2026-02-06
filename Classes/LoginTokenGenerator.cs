@@ -5,23 +5,15 @@ using System.Text;
 
 namespace MovieTheaterWS_v2.Classes
 {
-    public class LoginResponse
+    public class LoginTokenGenerator
     {
+        private int tokenExpirationMinutes = 3;
         private readonly IConfiguration _configuration;
 
-        public LoginResponse(IConfiguration configuration)
+        public LoginTokenGenerator(IConfiguration configuration)
         {
             _configuration = configuration;
         }
-
-        public bool Success {  get; set; }
-        public int userId { get; set; }
-        public string? FirstName { get; set; }
-        public string? LastName { get; set; }
-        public string? Email { get; set; } = null!;
-        public int? IdRole { get; set; }
-        public string? Token { get; set; }
-
         public string GenerateToken(string userId, string username)
         {
             string mySecretKey = _configuration.GetValue<string>("JwtBearerData:SecretKey");
@@ -39,7 +31,7 @@ namespace MovieTheaterWS_v2.Classes
                 issuer: _configuration.GetValue<string>("JwtBearerData:Issuer"),
                 audience: _configuration.GetValue<string>("JwtBearerData:Audience"),
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(2),
+                expires: DateTime.UtcNow.AddMinutes(tokenExpirationMinutes),
                 signingCredentials: creds
                 );
 

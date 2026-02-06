@@ -1,11 +1,11 @@
 ﻿namespace MovieTheaterWS_v2.Classes
 {
-    public class LoginRequest
+    public class LoginRequestClass
     {
         public string Email {  get; set; }
         public string Password { get; set; }
 
-        public LoginRequest()
+        public LoginRequestClass()
         {
             Email = string.Empty;
             Password = string.Empty;

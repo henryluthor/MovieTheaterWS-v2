@@ -25,7 +25,7 @@ namespace MovieTheaterWS_v2.Controllers
 
         // POST api/<LoginController>
         [HttpPost]
-        public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequest loginRequest)
+        public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequestClass loginRequest)
         {
             GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
             LoginResponse loginResponse = new LoginResponse(_configuration);

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using MovieTheaterWS_v2.Bll;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
-using NuGet.Protocol;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using System.Text;
@@ -16,6 +15,7 @@ namespace MovieTheaterWS_v2.Controllers
     public class AuthController : ControllerBase
     {
         private int cookieExpirationHours = 24;
+        
         private readonly MovietheaterContext _context;
         private readonly IConfiguration _configuration;
 
@@ -26,89 +26,59 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
         // Original line
-        // public IActionResult Login([FromBody] LoginRequest loginRequest)
+        // public IActionResult Login([FromBody] LoginRequest loginRequestClass)
         // Generate token and create cookie to store token
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
-        {            
-
-            // Need LoginResponse object to generate token
-            LoginResponse loginResponse = new LoginResponse(_configuration);
-
-            var token = String.Empty;
-
-            // Authenticate user
-            // Check if email exist in DB
-            var systemUser = new Systemuser();
+        public async Task<IActionResult> Login([FromBody] LoginRequestClass loginRequestClass)
+        {
+            SystemUserBll systemUserBll = new SystemUserBll(_context, _configuration);
+            var token = string.Empty;
 
             try
             {
-                systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);
-                if (systemUser != null)
+                token = await systemUserBll.ValidateLoginRequest(loginRequestClass);
+
+                if (token.IsNullOrEmpty())
                 {
-                    // Hash the received password and check if it matches the hash in DB
-                    SHA512 hashSvc = SHA512.Create();
-                    byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(loginRequest.Password));
-                    string hashString = BitConverter.ToString(hash).Replace("-", "");
-
-                    if (systemUser.PasswordHash == hashString)
-                    {
-                        // Access granted
-                        string username;
-                        if (systemUser.FirstName != null)
-                        {
-                            username = systemUser.FirstName;
-                        }
-                        else
-                        {
-                            username = "Generic name";
-                        }
-                        token = loginResponse.GenerateToken(systemUser.Id.ToString(), username);
-
-                        var cookieOptions = new CookieOptions
-                        {
-                            //HttpOnly = false,
-                            Secure = true,
-                            Domain = "localhost",
-                            Path = "/",
-                            Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
-                            //IsEssential = true,
-                            SameSite = SameSiteMode.None,
-                        };
-                        Response.Cookies.Append("token", token, cookieOptions);
-
-                        // This is how you set text in the body of the HttpResponse
-                        //await Response.WriteAsync("Hello, this is the HttpResponse body");
-                        //return Ok();
-
-                        // This is how you set an object in the body of the HttpResponse
-                        //var persona = new
-                        //{
-                        //    Name = "Juan",
-                        //    Age = 30
-                        //};
-                        //await Response.WriteAsJsonAsync(persona);
-                        //return Ok();
-
-                        // This is how you set an object as an action result
-                        //var persona = new
-                        //{
-                        //    Name = "Juan",
-                        //    Age = 30
-                        //};
-                        //return Ok(persona);
-
-                        return Ok(new { authenticated = true });
-                    }
-                    else
-                    {
-                        // Incorrect user or password
-                        return Unauthorized();
-                    }
+                    // Incorrect user or password
+                    return Unauthorized();                    
                 }
                 else
                 {
-                    return NotFound();
+                    var cookieOptions = new CookieOptions
+                    {
+                        //HttpOnly = false,
+                        Secure = true,
+                        Domain = "localhost",
+                        Path = "/",
+                        Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
+                        //IsEssential = true,
+                        SameSite = SameSiteMode.None,
+                    };
+                    Response.Cookies.Append("token", token, cookieOptions);
+
+                    // This is how you set text in the body of the HttpResponse
+                    //await Response.WriteAsync("Hello, this is the HttpResponse body");
+                    //return Ok();
+
+                    // This is how you set an object in the body of the HttpResponse
+                    //var persona = new
+                    //{
+                    //    Name = "Juan",
+                    //    Age = 30
+                    //};
+                    //await Response.WriteAsJsonAsync(persona);
+                    //return Ok();
+
+                    // This is how you set an object as an action result
+                    //var persona = new
+                    //{
+                    //    Name = "Juan",
+                    //    Age = 30
+                    //};
+                    //return Ok(persona);
+
+                    return Ok(new { authenticated = true });
                 }
             }
             catch
@@ -117,11 +87,6 @@ namespace MovieTheaterWS_v2.Controllers
             }            
         }
 
-        private string GenerateToken()
-        {
-            // Generate token
-            return "token generated";
-        }
 
         // Verify token
         [HttpGet("authenticated")]
