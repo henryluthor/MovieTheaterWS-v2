@@ -47,12 +47,12 @@ namespace MovieTheaterWS_v2.Controllers
                 {
                     var cookieOptions = new CookieOptions
                     {
-                        //HttpOnly = false,
-                        Secure = true,
+                        HttpOnly = true, // HttpOnly is a security flag added to a browser cookie that prevents client-side scripts—specifically JavaScript—from accessing or manipulating it.
+                        Secure = true, // True to make cookie to be accepted only from HTTPS, otherwise backend will not accept cookie
                         Domain = "localhost",
                         Path = "/",
                         Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
-                        //IsEssential = true,
+                        IsEssential = true,
                         SameSite = SameSiteMode.None,
                     };
                     Response.Cookies.Append("token", token, cookieOptions);
@@ -87,6 +87,23 @@ namespace MovieTheaterWS_v2.Controllers
             }            
         }
 
+        [HttpPost("logout")]
+        public UnauthorizedResult Logout()
+        {
+            // Next 2 lines did not work, that is why they are commented
+            //string token = HttpContext.Request.Cookies["token"];
+            //HttpContext.Response.Cookies.Delete(token);
+
+            var cookieOptions = new CookieOptions
+            {
+                Expires = DateTime.Now.AddDays(-1),
+                IsEssential = false
+            };
+
+            Response.Cookies.Append("token", "", cookieOptions);
+            return Unauthorized();
+        }
+
 
         // Verify token
         [HttpGet("authenticated")]
@@ -95,7 +112,7 @@ namespace MovieTheaterWS_v2.Controllers
             // var token = Request.Cookies["token"]; // this is another way of doing the following line
             var token = HttpContext.Request.Cookies["token"];
 
-            if(token == null)
+            if(token.IsNullOrEmpty())
             {
                 return Unauthorized();
             }
