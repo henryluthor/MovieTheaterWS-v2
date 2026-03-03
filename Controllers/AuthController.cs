@@ -88,7 +88,7 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
         [HttpPost("logout")]
-        public UnauthorizedResult Logout()
+        public IActionResult Logout()
         {
             // Next 2 lines did not work, that is why they are commented
             //string token = HttpContext.Request.Cookies["token"];
@@ -101,7 +101,7 @@ namespace MovieTheaterWS_v2.Controllers
             };
 
             Response.Cookies.Append("token", "", cookieOptions);
-            return Unauthorized();
+            return Ok("Logout successful");
         }
 
 
