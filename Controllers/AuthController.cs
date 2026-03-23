@@ -56,6 +56,7 @@ namespace MovieTheaterWS_v2.Controllers
                         SameSite = SameSiteMode.None,
                     };
                     Response.Cookies.Append("token", token, cookieOptions);
+                    Response.Cookies.Append("email", loginRequestClass.Email);
 
                     // This is how you set text in the body of the HttpResponse
                     //await Response.WriteAsync("Hello, this is the HttpResponse body");
@@ -78,7 +79,14 @@ namespace MovieTheaterWS_v2.Controllers
                     //};
                     //return Ok(persona);
 
-                    return Ok(new { authenticated = true });
+                    LoginResponse loginResponse = new LoginResponse
+                    {
+                        Authenticated = true,
+                        Email = loginRequestClass.Email
+                    };
+
+                    //return Ok(new { authenticated = true });
+                    return Ok(loginResponse);
                 }
             }
             catch
@@ -142,8 +150,16 @@ namespace MovieTheaterWS_v2.Controllers
                         // Token has expired
                         return Unauthorized();
                     }
+                    
 
-                    return Ok(new { authenticated = true });
+                    LoginResponse loginResponse = new LoginResponse
+                    {
+                        Authenticated = true,
+                        Email = HttpContext.Request.Cookies["email"]
+                    };
+
+                    //return Ok(new { authenticated = true });
+                    return Ok(loginResponse);
                 }
                 else
                 {

@@ -22,65 +22,65 @@ namespace MovieTheaterWS_v2.Controllers
             _configuration = configuration;
         }
 
-
+        // THIS CONTROLLER SHOULD BE CHECKED FOR DELETION, BECAUSE NOW IT IS IMPLEMENTED THE AUTHCONTROLER
         // POST api/<LoginController>
-        [HttpPost]
-        public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequestClass loginRequest)
-        {
-            GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
-            LoginResponse loginResponse = new LoginResponse(_configuration);
+        //[HttpPost]
+        //public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequestClass loginRequest)
+        //{
+        //    GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
+        //    LoginResponse loginResponse = new LoginResponse(_configuration);
 
-            // Check if email exist in DB
-            var systemUser = new Systemuser();
-            systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);            
+        //    // Check if email exist in DB
+        //    var systemUser = new Systemuser();
+        //    systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);            
 
-            if (systemUser != null)
-            {
-                // Hash the received password and check if it matches the hash in DB
-                SHA512 hashSvc = SHA512.Create();
-                byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(loginRequest.Password));
-                string hashString = BitConverter.ToString(hash).Replace("-", "");                
+        //    if (systemUser != null)
+        //    {
+        //        // Hash the received password and check if it matches the hash in DB
+        //        SHA512 hashSvc = SHA512.Create();
+        //        byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(loginRequest.Password));
+        //        string hashString = BitConverter.ToString(hash).Replace("-", "");                
 
-                if (systemUser.PasswordHash == hashString)
-                {
-                    // Access granted
-                    string username;
-                    if(systemUser.FirstName != null)
-                    {
-                        username = systemUser.FirstName;
-                    }
-                    else
-                    {
-                        username = "Generic name";
-                    }
+        //        if (systemUser.PasswordHash == hashString)
+        //        {
+        //            // Access granted
+        //            string username;
+        //            if(systemUser.FirstName != null)
+        //            {
+        //                username = systemUser.FirstName;
+        //            }
+        //            else
+        //            {
+        //                username = "Generic name";
+        //            }
 
-                    loginResponse.Success = true;
-                    loginResponse.FirstName = systemUser.FirstName;
-                    loginResponse.LastName = systemUser.LastName;
-                    loginResponse.Email = systemUser.Email;
-                    loginResponse.IdRole = systemUser.IdRole;
-                    loginResponse.Token = loginResponse.GenerateToken(systemUser.Id.ToString(), username);
+        //            loginResponse.Success = true;
+        //            loginResponse.FirstName = systemUser.FirstName;
+        //            loginResponse.LastName = systemUser.LastName;
+        //            loginResponse.Email = systemUser.Email;
+        //            loginResponse.IdRole = systemUser.IdRole;
+        //            loginResponse.Token = loginResponse.GenerateToken(systemUser.Id.ToString(), username);
                     
-                    genericResponse.Message = "Login successfull.";
-                }
-                else
-                {
-                    // Incorrect user or password
-                    loginResponse.Success = false;
-                    genericResponse.Message = "Incorrect user or password.";
-                }
-            }
-            else
-            {
-                // User not registered
-                loginResponse.Success = false;
-                genericResponse.Message = "Incorrect user or password.";
-            }
+        //            genericResponse.Message = "Login successfull.";
+        //        }
+        //        else
+        //        {
+        //            // Incorrect user or password
+        //            loginResponse.Success = false;
+        //            genericResponse.Message = "Incorrect user or password.";
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // User not registered
+        //        loginResponse.Success = false;
+        //        genericResponse.Message = "Incorrect user or password.";
+        //    }
 
-            genericResponse.Data = loginResponse;
+        //    genericResponse.Data = loginResponse;
 
-            return genericResponse;
-        }
+        //    return genericResponse;
+        //}
 
     }
 }
