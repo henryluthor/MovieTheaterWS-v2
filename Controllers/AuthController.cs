@@ -36,7 +36,7 @@ namespace MovieTheaterWS_v2.Controllers
 
             try
             {
-                token = await systemUserBll.ValidateLoginRequest(loginRequestClass);
+                //token = await systemUserBll.ValidateLoginRequest(loginRequestClass);
 
                 if (token.IsNullOrEmpty())
                 {
@@ -53,7 +53,7 @@ namespace MovieTheaterWS_v2.Controllers
                         Path = "/",
                         Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
                         IsEssential = true,
-                        SameSite = SameSiteMode.None,
+                        SameSite = SameSiteMode.None, // SameSite = SameSiteMode.Strict o Lax to avoid Cross-Site Request Forgery (CSRF)
                     };
                     Response.Cookies.Append("token", token, cookieOptions);
                     Response.Cookies.Append("email", loginRequestClass.Email);
@@ -109,6 +109,8 @@ namespace MovieTheaterWS_v2.Controllers
             };
 
             Response.Cookies.Append("token", "", cookieOptions);
+            Response.Cookies.Append("email", "");
+
             return Ok("Logout successful");
         }
 

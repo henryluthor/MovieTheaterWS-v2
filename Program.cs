@@ -1,7 +1,8 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using MovieTheaterWS_v2.Data;
 using MovieTheaterWS_v2.Models;
-using System.Text;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,40 +13,25 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-//new
+// Register DbContext
 builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = "JwtBearer";
-//    options.DefaultChallengeScheme = "JwtBearer";
-//})
-//.AddJwtBearer("JwtBearer", options =>
-//{
-//    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
-//    {
-//        ValidateIssuer = true,
-//        ValidateAudience = true,
-//        ValidateLifetime = true,
-//        ValidateIssuerSigningKey = true,
-//        ValidIssuer = "myIssuer",
-//        ValidAudience = "myAudience",
-//        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("mysecretkey"))
-//    };
-//});
+
+builder.Services.AddIdentity<User, IdentityRole>(options =>
+{
+    options.SignIn.RequireConfirmedAccount = false;
+})
+    .AddEntityFrameworkStores<MovietheaterContext>()
+    .AddDefaultTokenProviders() // Necessary for password recovery
+                                //.AddDefaultUI(); // This adds the Login/Register pages if you need them, not necessary if my Web API (without Microsoft login pages)
+    ;
+
 
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = "Cookies";
     options.DefaultChallengeScheme = "Cookies";
-})
-//.AddCookie("Cookies", options =>
-//{
-//    options.Cookie.HttpOnly = true;
-//    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-//    //options.Cookie.SameSite = SameSiteMode.None;
-//})
-;
+});
 
 builder.Services.AddCors(options =>
 {
@@ -60,7 +46,26 @@ builder.Services.AddCors(options =>
     );
 });
 
+
+
 var app = builder.Build();
+
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        // Run seeder
+        await DbSeeder.SeedRolesAndAdminAsync(services);
+    }
+    catch(Exception ex)
+    {
+        //Console.WriteLine($"Error in the Seeder: {ex.Message}");
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred when seeding the database.");
+    }
+}
 
 
 // Configure the HTTP request pipeline.
@@ -74,26 +79,14 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
+app.UseCors("AllowCredentials");
+
 // Set requests pipeline
 app.UseAuthentication();
 app.UseAuthorization();
 
 // Add routes and controllers
 app.MapControllers();
-
-
-//app.UseCors(policy => policy.AllowAnyOrigin()
-//    .AllowAnyHeader());
-
-app.UseCors("AllowCredentials");
-
-// New line
-//app.Use(async (contex, next) =>
-//{
-//    contex.Response.Headers.Add("Access-Control-Allow-Origin", "http://localhost:3000");
-//    contex.Response.Headers.Add("Access-Control-Allow-Credentials", "true");
-//    await next();
-//});
 
 
 app.Run();

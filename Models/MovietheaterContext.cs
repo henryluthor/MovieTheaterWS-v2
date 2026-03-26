@@ -1,10 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
 namespace MovieTheaterWS_v2.Models;
 
-public partial class MovietheaterContext : DbContext
+//public partial class MovietheaterContext : DbContext
+public partial class MovietheaterContext : IdentityDbContext<User>
 {
     public MovietheaterContext()
     {
@@ -21,9 +21,9 @@ public partial class MovietheaterContext : DbContext
 
     public virtual DbSet<Movie> Movies { get; set; }
 
-    public virtual DbSet<Role> Roles { get; set; }
+    //public virtual DbSet<Role> Roles { get; set; }
 
-    public virtual DbSet<Systemuser> Systemusers { get; set; }
+    //public virtual DbSet<User> SystemUsers { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
@@ -31,6 +31,9 @@ public partial class MovietheaterContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        // New line
+        base.OnModelCreating(modelBuilder);
+
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AI");
 
         modelBuilder.Entity<Complex>(entity =>
@@ -83,47 +86,47 @@ public partial class MovietheaterContext : DbContext
             entity.Property(e => e.Year).HasComment("Year of release of the movie.");
         });
 
-        modelBuilder.Entity<Role>(entity =>
-        {
-            entity.HasKey(e => e.IdRole);
+        //modelBuilder.Entity<Role>(entity =>
+        //{
+        //    entity.HasKey(e => e.IdRole);
 
-            entity.ToTable("Role");
+        //    //entity.ToTable("Role");
 
-            entity.Property(e => e.IdRole).HasColumnName("idRole");
-            entity.Property(e => e.Description)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("description");
-        });
+        //    entity.Property(e => e.IdRole).HasColumnName("idRole");
+        //    entity.Property(e => e.Description)
+        //        .HasMaxLength(50)
+        //        .IsUnicode(false)
+        //        .HasColumnName("description");
+        //});
 
-        modelBuilder.Entity<Systemuser>(entity =>
-        {
-            entity.ToTable("Systemuser");
+        //modelBuilder.Entity<User>(entity =>
+        //{
+        //    //entity.ToTable("SystemUser");
 
-            entity.Property(e => e.Id).HasColumnName("id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("email");
-            entity.Property(e => e.FirstName)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("firstName");
-            entity.Property(e => e.IdRole).HasColumnName("idRole");
-            entity.Property(e => e.LastName)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("lastName");
-            entity.Property(e => e.PasswordHash)
-                .HasMaxLength(128)
-                .IsUnicode(false)
-                .HasColumnName("passwordHash");
+        //    //entity.Property(e => e.Id).HasColumnName("id");
+        //    //entity.Property(e => e.Email)
+        //    //    .HasMaxLength(50)
+        //    //    .IsUnicode(false)
+        //    //    .HasColumnName("email");
+        //    entity.Property(e => e.FirstName)
+        //        .HasMaxLength(50)
+        //        .IsUnicode(false)
+        //        .HasColumnName("firstName");
+        //    //entity.Property(e => e.IdRole).HasColumnName("idRole");
+        //    entity.Property(e => e.LastName)
+        //        .HasMaxLength(50)
+        //        .IsUnicode(false)
+        //        .HasColumnName("lastName");
+        //    //entity.Property(e => e.PasswordHash)
+        //    //    .HasMaxLength(128)
+        //    //    .IsUnicode(false)
+        //    //    .HasColumnName("passwordHash");
 
-            entity.HasOne(d => d.IdRoleNavigation).WithMany(p => p.Systemusers)
-                .HasForeignKey(d => d.IdRole)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Systemuser_Role");
-        });
+        //    //entity.HasOne(d => d.IdRoleNavigation).WithMany(p => p.Systemusers)
+        //    //    .HasForeignKey(d => d.IdRole)
+        //    //    .OnDelete(DeleteBehavior.ClientSetNull)
+        //    //    .HasConstraintName("FK_Systemuser_Role");
+        //});
 
         OnModelCreatingPartial(modelBuilder);
     }

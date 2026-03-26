@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
@@ -19,55 +20,56 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
         // GET: api/<SystemUserController>
-        [HttpGet]
-        public async Task<List<Systemuser>> Get()
-        {
-            return await _context.Systemusers.ToListAsync();
-        }
+        //[HttpGet]
+        //public async Task<List<User>> Get()
+        //{
+        //    return await _context.Systemusers.ToListAsync();
+        //}
 
         // POST: api/<SystemUserController>
-        [HttpPost]
-        public async Task<GenericResponse<Systemuser>> Post(SystemUserToPost systemUserToPost)
-        {
-            var genRensponse = new GenericResponse<Systemuser>();
+        
+        //[HttpPost]
+        //public async Task<GenericResponse<User>> Post(SystemUserToPost systemUserToPost)
+        //{
+        //    var genRensponse = new GenericResponse<User>();
 
-            var allSystemUsers = from s in _context.Systemusers select s;
-            allSystemUsers = allSystemUsers.Where(s => s.Email == systemUserToPost.Email);
+        //    var allSystemUsers = from s in _context.Systemusers select s;
+        //    allSystemUsers = allSystemUsers.Where(s => s.Email == systemUserToPost.Email);
 
-            // Check if email is already registered
-            if (allSystemUsers.Any())
-            {
-                genRensponse.Message = "That email is registered already.";
-            }
-            else
-            {
-                try
-                {
-                    // Hash user password
-                    SHA512 hashSvc = SHA512.Create();
-                    byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
+        //    // Check if email is already registered
+        //    if (allSystemUsers.Any())
+        //    {
+        //        genRensponse.Message = "That email is registered already.";
+        //    }
+        //    else
+        //    {
+        //        try
+        //        {
+        //            // Hash user password
+        //            SHA512 hashSvc = SHA512.Create();
+        //            byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
 
-                    Systemuser systemUser = new Systemuser();
-                    systemUser.FirstName = systemUserToPost.FirstName;
-                    systemUser.LastName = systemUserToPost.LastName;
-                    systemUser.Email = systemUserToPost.Email;
-                    systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
-                    systemUser.IdRole = systemUserToPost.IdRole;
+        //            User systemUser = new User();
+        //            systemUser.FirstName = systemUserToPost.FirstName;
+        //            systemUser.LastName = systemUserToPost.LastName;
+        //            systemUser.Email = systemUserToPost.Email;
+        //            systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
+        //            //systemUser.IdRole = systemUserToPost.IdRole;
 
-                    _context.Systemusers.Add(systemUser);
-                    await _context.SaveChangesAsync();
+        //            _context.Systemusers.Add(systemUser);
+        //            await _context.SaveChangesAsync();
 
-                    genRensponse.Message = "User registered successfully.";
-                    genRensponse.Data = systemUser;
-                }
-                catch(Exception ex)
-                {
-                    genRensponse.Message = "There was an error while trying to register the user. " + ex.Message;
-                }
-            }
+        //            genRensponse.Message = "User registered successfully.";
+        //            genRensponse.Data = systemUser;
+        //        }
+        //        catch(Exception ex)
+        //        {
+        //            genRensponse.Message = "There was an error while trying to register the user. " + ex.Message;
+        //        }
+        //    }
 
-            return genRensponse;
-        }
+        //    return genRensponse;
+        //}
 
     }
 }

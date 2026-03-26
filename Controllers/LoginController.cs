@@ -31,7 +31,7 @@ namespace MovieTheaterWS_v2.Controllers
         //    LoginResponse loginResponse = new LoginResponse(_configuration);
 
         //    // Check if email exist in DB
-        //    var systemUser = new Systemuser();
+        //    var systemUser = new User();
         //    systemUser = await _context.Systemusers.FirstOrDefaultAsync(s => s.Email == loginRequest.Email);            
 
         //    if (systemUser != null)
