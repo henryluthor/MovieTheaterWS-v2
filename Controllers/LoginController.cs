@@ -25,7 +25,7 @@ namespace MovieTheaterWS_v2.Controllers
         // THIS CONTROLLER SHOULD BE CHECKED FOR DELETION, BECAUSE NOW IT IS IMPLEMENTED THE AUTHCONTROLER
         // POST api/<LoginController>
         //[HttpPost]
-        //public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequestClass loginRequest)
+        //public async Task<GenericResponse<LoginResponse>> Post([FromBody] LoginRequest loginRequest)
         //{
         //    GenericResponse<LoginResponse> genericResponse = new GenericResponse<LoginResponse>();
         //    LoginResponse loginResponse = new LoginResponse(_configuration);

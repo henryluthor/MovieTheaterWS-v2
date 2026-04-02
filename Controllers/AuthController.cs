@@ -1,11 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using MovieTheaterWS_v2.Bll;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Cryptography;
+using System.Security.Claims;
 using System.Text;
 
 namespace MovieTheaterWS_v2.Controllers
@@ -16,91 +16,92 @@ namespace MovieTheaterWS_v2.Controllers
     {
         private int cookieExpirationHours = 24;
         
-        private readonly MovietheaterContext _context;
-        private readonly IConfiguration _configuration;
+        //private readonly MovietheaterContext _context;
+        //private readonly IConfiguration _configuration;
 
-        public AuthController(MovietheaterContext context, IConfiguration configuration)
+        private readonly LoginTokenGenerator _tokenGenerator;
+        private readonly UserManager<User> _userManager;
+
+        public AuthController(LoginTokenGenerator tokenGenerator, UserManager<User> userManager)
         {
-            _context = context;
-            _configuration = configuration;
+            //_context = context;
+            //_configuration = configuration;
+
+            _tokenGenerator = tokenGenerator;
+            _userManager = userManager;
         }
 
-        // Original line
-        // public IActionResult Login([FromBody] LoginRequest loginRequestClass)
+        
         // Generate token and create cookie to store token
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginRequestClass loginRequestClass)
+        public async Task<IActionResult> Login([FromBody] LoginRequest loginRequest)
         {
-            SystemUserBll systemUserBll = new SystemUserBll(_context, _configuration);
-            var token = string.Empty;
 
-            try
+            var user = await _userManager.FindByEmailAsync(loginRequest.Email);
+
+            if(user != null && await _userManager.CheckPasswordAsync(user, loginRequest.Password))
             {
-                //token = await systemUserBll.ValidateLoginRequest(loginRequestClass);
+                // Call my service class method
+                var token = await _tokenGenerator.GenerateToken(user);
 
-                if (token.IsNullOrEmpty())
+                var cookieOptions = new CookieOptions
                 {
-                    // Incorrect user or password
-                    return Unauthorized();                    
-                }
-                else
+                    HttpOnly = true, // HttpOnly is a security flag added to a browser cookie that prevents client-side scripts—specifically JavaScript—from accessing or manipulating it.
+                    Secure = true, // True to make cookie to be accepted only from HTTPS, otherwise backend will not accept cookie
+                    Domain = "localhost",
+                    Path = "/",
+                    Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
+                    IsEssential = true,
+                    SameSite = SameSiteMode.Lax, // SameSite = SameSiteMode.Strict o Lax to avoid Cross-Site Request Forgery (CSRF)
+                };
+                Response.Cookies.Append("token", token, cookieOptions);
+                Response.Cookies.Append("email", loginRequest.Email);
+
+                // This is how you set text in the body of the HttpResponse
+                //await Response.WriteAsync("Hello, this is the HttpResponse body");
+                //return Ok();
+
+                // This is how you set an object in the body of the HttpResponse
+                //var persona = new
+                //{
+                //    Name = "Juan",
+                //    Age = 30
+                //};
+                //await Response.WriteAsJsonAsync(persona);
+                //return Ok();
+
+                // This is how you set an object as an action result
+                //var persona = new
+                //{
+                //    Name = "Juan",
+                //    Age = 30
+                //};
+                //return Ok(persona);
+
+                LoginResponse loginResponse = new LoginResponse
                 {
-                    var cookieOptions = new CookieOptions
-                    {
-                        HttpOnly = true, // HttpOnly is a security flag added to a browser cookie that prevents client-side scripts—specifically JavaScript—from accessing or manipulating it.
-                        Secure = true, // True to make cookie to be accepted only from HTTPS, otherwise backend will not accept cookie
-                        Domain = "localhost",
-                        Path = "/",
-                        Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
-                        IsEssential = true,
-                        SameSite = SameSiteMode.None, // SameSite = SameSiteMode.Strict o Lax to avoid Cross-Site Request Forgery (CSRF)
-                    };
-                    Response.Cookies.Append("token", token, cookieOptions);
-                    Response.Cookies.Append("email", loginRequestClass.Email);
+                    Authenticated = true,
+                    Email = loginRequest.Email
+                };
 
-                    // This is how you set text in the body of the HttpResponse
-                    //await Response.WriteAsync("Hello, this is the HttpResponse body");
-                    //return Ok();
-
-                    // This is how you set an object in the body of the HttpResponse
-                    //var persona = new
-                    //{
-                    //    Name = "Juan",
-                    //    Age = 30
-                    //};
-                    //await Response.WriteAsJsonAsync(persona);
-                    //return Ok();
-
-                    // This is how you set an object as an action result
-                    //var persona = new
-                    //{
-                    //    Name = "Juan",
-                    //    Age = 30
-                    //};
-                    //return Ok(persona);
-
-                    LoginResponse loginResponse = new LoginResponse
-                    {
-                        Authenticated = true,
-                        Email = loginRequestClass.Email
-                    };
-
-                    //return Ok(new { authenticated = true });
-                    return Ok(loginResponse);
-                }
+                //return Ok(new { authenticated = true });
+                //return Ok(new {token});
+                return Ok(loginResponse);
+                
             }
-            catch
-            {
-                return BadRequest();
-            }            
+
+            return Unauthorized();
+
         }
+
+
 
         [HttpPost("logout")]
         public IActionResult Logout()
         {
             // Next 2 lines did not work, that is why they are commented
-            //string token = HttpContext.Request.Cookies["token"];
-            //HttpContext.Response.Cookies.Delete(token);
+            //string token2 = HttpContext.Request.Cookies["token2"];
+            //HttpContext.Response.Cookies.Delete(token2);
 
             var cookieOptions = new CookieOptions
             {
@@ -116,65 +117,85 @@ namespace MovieTheaterWS_v2.Controllers
 
 
         // Verify token
+        //[HttpGet("authenticated")]
+        //public IActionResult Authenticated()
+        //{
+        //    // var token2 = Request.Cookies["token2"]; // this is another way of doing the following line
+        //    var token = HttpContext.Request.Cookies["token"];
+
+        //    if(token.IsNullOrEmpty())
+        //    {
+        //        return Unauthorized();
+        //    }
+
+        //    var tokenHandler = new JwtSecurityTokenHandler();
+        //    var validationParameters = new TokenValidationParameters
+        //    {
+        //        ValidateIssuer = true,
+        //        ValidateAudience = true,
+        //        ValidateLifetime = true,
+        //        ValidateIssuerSigningKey = true,
+        //        ValidIssuer = "MovieTheaterWS-v2", //check this
+        //        ValidAudience = "movie-theater-web-app", //check this
+        //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("H7YVZWs1TnxVF8tCOCLF2/RJRy0FK3Hk")) //check this
+        //    };
+
+        //    try
+        //    {
+        //        var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out var securityToken);
+
+        //        if(securityToken is JwtSecurityToken jwtSecurityToken)
+        //        {
+        //            var expirationDate = jwtSecurityToken.ValidTo;
+
+        //            if(expirationDate < DateTime.UtcNow)
+        //            {
+        //                // Token has expired
+        //                return Unauthorized();
+        //            }
+
+
+        //            LoginResponse loginResponse = new LoginResponse
+        //            {
+        //                Authenticated = true,
+        //                Email = HttpContext.Request.Cookies["email"]
+        //            };
+
+        //            //return Ok(new { authenticated = true });
+        //            return Ok(loginResponse);
+        //        }
+        //        else
+        //        {
+        //            // Token is not JWT
+        //            return Unauthorized();
+        //        }
+        //    }
+        //    catch(SecurityTokenException ex)
+        //    {
+        //        // Token is invalid
+        //        return Unauthorized();
+        //    }
+
+        //}
+
+        [Authorize] // If cookie is valid, it enters. If not, it returns error 401
         [HttpGet("authenticated")]
         public IActionResult Authenticated()
         {
-            // var token = Request.Cookies["token"]; // this is another way of doing the following line
-            var token = HttpContext.Request.Cookies["token"];
+            // You do not need to read the cookie manually with HttpContext.Request.Cookies["token"]
+            // The middleware already did it for you and filled the object User.
+            //LoginResponse loginResponse = new LoginResponse
+            //{
+            //    Authenticated = true
+            //};
 
-            if(token.IsNullOrEmpty())
+            return Ok(new
             {
-                return Unauthorized();
-            }
-
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var validationParameters = new TokenValidationParameters
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                ValidIssuer = "MovieTheaterWS-v2", //check this
-                ValidAudience = "movie-theater-web-app", //check this
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("H7YVZWs1TnxVF8tCOCLF2/RJRy0FK3Hk")) //check this
-            };
-
-            try
-            {
-                var claimsPrincipal = tokenHandler.ValidateToken(token, validationParameters, out var securityToken);
-
-                if(securityToken is JwtSecurityToken jwtSecurityToken)
-                {
-                    var expirationDate = jwtSecurityToken.ValidTo;
-
-                    if(expirationDate < DateTime.UtcNow)
-                    {
-                        // Token has expired
-                        return Unauthorized();
-                    }
-                    
-
-                    LoginResponse loginResponse = new LoginResponse
-                    {
-                        Authenticated = true,
-                        Email = HttpContext.Request.Cookies["email"]
-                    };
-
-                    //return Ok(new { authenticated = true });
-                    return Ok(loginResponse);
-                }
-                else
-                {
-                    // Token is not JWT
-                    return Unauthorized();
-                }
-            }
-            catch(SecurityTokenException ex)
-            {
-                // Token is invalid
-                return Unauthorized();
-            }
-
+                email = User.FindFirstValue(ClaimTypes.Email),
+                role = User.FindFirstValue(ClaimTypes.Role),
+                isAuthenticated = true,
+                Authenticated = true
+            });
         }
     }
 }

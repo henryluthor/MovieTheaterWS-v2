@@ -1,7 +1,11 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Data;
 using MovieTheaterWS_v2.Models;
+using System.Text;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -27,10 +31,48 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
     ;
 
 
-builder.Services.AddAuthentication(options =>
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultAuthenticateScheme = "Cookies";
+//    options.DefaultChallengeScheme = "Cookies";
+//});
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
 {
-    options.DefaultAuthenticateScheme = "Cookies";
-    options.DefaultChallengeScheme = "Cookies";
+    // JWT validation setting (SecretKey, etc.)
+    options.TokenValidationParameters = new TokenValidationParameters 
+    {
+        // 1. Validate the token signature
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerData:SecretKey"])),
+
+        // 2. Validate who issued the token (my backend)
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JwtBearerData:Issuer"],
+
+        // 3. Validate who is my token for (my frontend)
+        ValidateAudience = true,
+        ValidAudience = builder.Configuration["JwtBearerData:Audience"],
+
+        // 4. Validate the token is not expired
+        ValidateLifetime = true,
+        ClockSkew = TimeSpan.Zero, // Elimina el margen de 5 min por defecto para pruebas exactas
+
+        // 5. ¡VITAL FOR ADMIN ROLE! 
+        // Map the Microsoft long claim name to the Roles system
+        RoleClaimType = "http://microsoft.com"
+    };
+
+    // The "bridge" to get the token from the cookie
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            context.Token = context.Request.Cookies["token"];
+            return Task.CompletedTask;
+        }
+    };
 });
 
 builder.Services.AddCors(options =>
@@ -46,6 +88,14 @@ builder.Services.AddCors(options =>
     );
 });
 
+builder.Services.AddAuthorization(options =>
+{
+    // Creating a polic that demands the "Admin" role
+    options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+});
+
+
+builder.Services.AddScoped<LoginTokenGenerator>();
 
 
 var app = builder.Build();
