@@ -43,23 +43,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     // JWT validation setting (SecretKey, etc.)
     options.TokenValidationParameters = new TokenValidationParameters 
     {
-        // 1. Validate the token signature
+        // Validate the token signature
         ValidateIssuerSigningKey = true,
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtBearerData:SecretKey"])),
 
-        // 2. Validate who issued the token (my backend)
+        // Validate who issued the token (my backend)
         ValidateIssuer = true,
         ValidIssuer = builder.Configuration["JwtBearerData:Issuer"],
 
-        // 3. Validate who is my token for (my frontend)
+        // Validate who is my token for (my frontend)
         ValidateAudience = true,
         ValidAudience = builder.Configuration["JwtBearerData:Audience"],
 
-        // 4. Validate the token is not expired
+        // Validate the token is not expired
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero, // Elimina el margen de 5 min por defecto para pruebas exactas
 
-        // 5. ¡VITAL FOR ADMIN ROLE! 
+        // ¡VITAL FOR ADMIN ROLE! 
         // Map the Microsoft long claim name to the Roles system
         RoleClaimType = "http://microsoft.com"
     };

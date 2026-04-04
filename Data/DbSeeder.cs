@@ -13,7 +13,7 @@ namespace MovieTheaterWS_v2.Data
             var logger = service.GetRequiredService<ILogger<DbSeeder>>();
 
             // Create roles only if they do not exist
-            string[] roles = { "Administrator", "Customer" };
+            string[] roles = { "Admin", "Customer" };
             foreach (var rol in roles)
             {
                 if (!await roleManager.RoleExistsAsync(rol))
@@ -39,7 +39,7 @@ namespace MovieTheaterWS_v2.Data
 
                 if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(admin, "Administrator");
+                    await userManager.AddToRoleAsync(admin, "Admin");
                     logger.LogInformation("Administrator user created successfully.");
                 }
                 else

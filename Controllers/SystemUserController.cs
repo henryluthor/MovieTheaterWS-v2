@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
@@ -13,10 +14,14 @@ namespace MovieTheaterWS_v2.Controllers
     public class SystemUserController : ControllerBase
     {
         private readonly MovietheaterContext _context;
+        private readonly UserManager<User> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public SystemUserController(MovietheaterContext context)
+        public SystemUserController(MovietheaterContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
         {
             _context = context;
+            _userManager = userManager;
+            _roleManager = roleManager;
         }
 
         // GET: api/<SystemUserController>
@@ -31,7 +36,7 @@ namespace MovieTheaterWS_v2.Controllers
         [HttpPost]
         //[Authorize(Policy = "AdminOnly")]
         [Authorize(Roles = "Admin")]
-        public async Task<GenericResponse<User>> Post(SystemUserToPost systemUserToPost)
+        public async Task<GenericResponse<User>> PostOld(SystemUserToPost systemUserToPost)
         {
             var genRensponse = new GenericResponse<User>();
 
@@ -71,6 +76,89 @@ namespace MovieTheaterWS_v2.Controllers
             }
 
             return genRensponse;
+        }
+
+        // Deprecated, now using different endpoints for the creation of admins and the creation of regular users
+        //[HttpPost]
+        //public async Task<IdentityResult> Post([FromBody] SystemUserToPost systemUserToPost)
+        //{
+        //    var user = new User
+        //    {
+        //        UserName = systemUserToPost.Email,
+        //        Email = systemUserToPost.Email
+        //    };
+
+        //    // It is not necessary to manually hash the password, CreateAsync does it
+        //    var result = await _userManager.CreateAsync(user, systemUserToPost.Password);
+
+        //    if (result.Succeeded)
+        //    {
+        //        // User created successfully
+        //        // Here you could assign a defaul role if you need to
+        //        var roleNameExists = await _roleManager.RoleExistsAsync(systemUserToPost.RoleName);
+
+        //        if (roleNameExists)
+        //        {
+        //            await _userManager.AddToRoleAsync(user, systemUserToPost.RoleName);
+        //        }
+        //    }
+        //    else
+        //    {
+        //        // Handle erros (e.g., password too short, duplicated user)
+        //        var errors = result.Errors.Select(e => e.Description);
+        //    }
+
+        //    return result; // Return success or error list
+        //}
+
+
+        [AllowAnonymous]
+        [HttpPost("register-customer")]
+        public async Task<IActionResult> RegisterCustomer([FromBody] SystemUserToPost systemUserToPost)
+        {
+            var user = new User
+            {
+                UserName = systemUserToPost.Email,
+                Email = systemUserToPost.Email
+            };
+
+            // It is not necessary to manually hash the password, CreateAsync does it
+            var result = await _userManager.CreateAsync(user, systemUserToPost.Password);
+
+            if (result.Succeeded)
+            {
+                // User created successfully
+                // Forced role assignation from server, ignoring any attempt from client
+                await _userManager.AddToRoleAsync(user, "Customer");
+                return Ok();
+            }
+            //return BadRequest(result.Errors.Select(e => e.Description));
+            return BadRequest(result.Errors);
+        }
+
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("create-admin-user")]
+        public async Task<IActionResult> CreateAdminUser([FromBody] SystemUserToPost systemUserToPost)
+        {
+            var user = new User
+            {
+                UserName = systemUserToPost.Email,
+                Email = systemUserToPost.Email
+            };
+
+            // It is not necessary to manually hash the password, CreateAsync does it
+            var result = await _userManager.CreateAsync(user, systemUserToPost.Password);
+            if (result.Succeeded)
+            {
+                // User created successfully
+                // Here you trust the model because only an Admin reached this point
+                await _userManager.AddToRoleAsync(user, systemUserToPost.RoleName);
+                return Ok();
+            }
+            //return BadRequest(result.Errors.Select(e => e.Description));
+            return BadRequest(result.Errors);
         }
 
     }
