@@ -12,8 +12,8 @@ using MovieTheaterWS_v2.Models;
 namespace MovieTheaterWS_v2.Migrations
 {
     [DbContext(typeof(MovietheaterContext))]
-    [Migration("20260325175752_InitialIdentity")]
-    partial class InitialIdentity
+    [Migration("20260404223405_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

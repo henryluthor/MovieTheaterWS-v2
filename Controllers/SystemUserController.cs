@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
-using System.Security.Cryptography;
-using System.Text;
+//using System.Security.Cryptography;
+//using System.Text;
 
 namespace MovieTheaterWS_v2.Controllers
 {
@@ -15,13 +15,11 @@ namespace MovieTheaterWS_v2.Controllers
     {
         private readonly MovietheaterContext _context;
         private readonly UserManager<User> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
 
-        public SystemUserController(MovietheaterContext context, UserManager<User> userManager, RoleManager<IdentityRole> roleManager)
+        public SystemUserController(MovietheaterContext context, UserManager<User> userManager)
         {
             _context = context;
             _userManager = userManager;
-            _roleManager = roleManager;
         }
 
         // GET: api/<SystemUserController>
@@ -32,98 +30,66 @@ namespace MovieTheaterWS_v2.Controllers
             return await _context.Users.ToListAsync();
         }
 
+        // Deprecated since using AspNetCore.Identity
         // POST: api/<SystemUserController>
-        [HttpPost]
-        //[Authorize(Policy = "AdminOnly")]
-        [Authorize(Roles = "Admin")]
-        public async Task<GenericResponse<User>> PostOld(SystemUserToPost systemUserToPost)
-        {
-            var genRensponse = new GenericResponse<User>();
-
-            var allSystemUsers = from s in _context.Users select s;
-            allSystemUsers = allSystemUsers.Where(s => s.Email == systemUserToPost.Email);
-
-            // Check if email is already registered
-            if (allSystemUsers.Any())
-            {
-                genRensponse.Message = "That email is registered already.";
-            }
-            else
-            {
-                try
-                {
-                    // Hash user password
-                    SHA512 hashSvc = SHA512.Create();
-                    byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
-
-                    User systemUser = new User();
-                    systemUser.FirstName = systemUserToPost.FirstName;
-                    systemUser.LastName = systemUserToPost.LastName;
-                    systemUser.Email = systemUserToPost.Email;
-                    systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
-                    //systemUser.IdRole = systemUserToPost.IdRole;
-
-                    _context.Users.Add(systemUser);
-                    await _context.SaveChangesAsync();
-
-                    genRensponse.Message = "User registered successfully.";
-                    genRensponse.Data = systemUser;
-                }
-                catch (Exception ex)
-                {
-                    genRensponse.Message = "There was an error while trying to register the user. " + ex.Message;
-                }
-            }
-
-            return genRensponse;
-        }
-
-        // Deprecated, now using different endpoints for the creation of admins and the creation of regular users
         //[HttpPost]
-        //public async Task<IdentityResult> Post([FromBody] SystemUserToPost systemUserToPost)
+        ////[Authorize(Policy = "AdminOnly")]
+        //[Authorize(Roles = "Admin")]
+        //public async Task<GenericResponse<User>> PostOld(SystemUserToPost systemUserToPost)
         //{
-        //    var user = new User
+        //    var genRensponse = new GenericResponse<User>();
+
+        //    var allSystemUsers = from s in _context.Users select s;
+        //    allSystemUsers = allSystemUsers.Where(s => s.Email == systemUserToPost.Email);
+
+        //    // Check if email is already registered
+        //    if (allSystemUsers.Any())
         //    {
-        //        UserName = systemUserToPost.Email,
-        //        Email = systemUserToPost.Email
-        //    };
-
-        //    // It is not necessary to manually hash the password, CreateAsync does it
-        //    var result = await _userManager.CreateAsync(user, systemUserToPost.Password);
-
-        //    if (result.Succeeded)
-        //    {
-        //        // User created successfully
-        //        // Here you could assign a defaul role if you need to
-        //        var roleNameExists = await _roleManager.RoleExistsAsync(systemUserToPost.RoleName);
-
-        //        if (roleNameExists)
-        //        {
-        //            await _userManager.AddToRoleAsync(user, systemUserToPost.RoleName);
-        //        }
+        //        genRensponse.Message = "That email is registered already.";
         //    }
         //    else
         //    {
-        //        // Handle erros (e.g., password too short, duplicated user)
-        //        var errors = result.Errors.Select(e => e.Description);
+        //        try
+        //        {
+        //            // Hash user password
+        //            SHA512 hashSvc = SHA512.Create();
+        //            byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
+
+        //            User systemUser = new User();
+        //            systemUser.FirstName = systemUserToPost.FirstName;
+        //            systemUser.LastName = systemUserToPost.LastName;
+        //            systemUser.Email = systemUserToPost.Email;
+        //            systemUser.PasswordHash = BitConverter.ToString(hash).Replace("-", "");
+        //            //systemUser.IdRole = userToPost.IdRole;
+
+        //            _context.Users.Add(systemUser);
+        //            await _context.SaveChangesAsync();
+
+        //            genRensponse.Message = "User registered successfully.";
+        //            genRensponse.Data = systemUser;
+        //        }
+        //        catch (Exception ex)
+        //        {
+        //            genRensponse.Message = "There was an error while trying to register the user. " + ex.Message;
+        //        }
         //    }
 
-        //    return result; // Return success or error list
+        //    return genRensponse;
         //}
 
 
         [AllowAnonymous]
         [HttpPost("register-customer")]
-        public async Task<IActionResult> RegisterCustomer([FromBody] SystemUserToPost systemUserToPost)
+        public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegistrationDTO userToPost)
         {
             var user = new User
             {
-                UserName = systemUserToPost.Email,
-                Email = systemUserToPost.Email
+                UserName = userToPost.Email,
+                Email = userToPost.Email
             };
 
             // It is not necessary to manually hash the password, CreateAsync does it
-            var result = await _userManager.CreateAsync(user, systemUserToPost.Password);
+            var result = await _userManager.CreateAsync(user, userToPost.Password);
 
             if (result.Succeeded)
             {
@@ -140,21 +106,21 @@ namespace MovieTheaterWS_v2.Controllers
 
         [Authorize(Roles = "Admin")]
         [HttpPost("create-admin-user")]
-        public async Task<IActionResult> CreateAdminUser([FromBody] SystemUserToPost systemUserToPost)
+        public async Task<IActionResult> CreateAdminUser([FromBody] AdminRegistrationDTO userToPost)
         {
             var user = new User
             {
-                UserName = systemUserToPost.Email,
-                Email = systemUserToPost.Email
+                UserName = userToPost.Email,
+                Email = userToPost.Email
             };
 
             // It is not necessary to manually hash the password, CreateAsync does it
-            var result = await _userManager.CreateAsync(user, systemUserToPost.Password);
+            var result = await _userManager.CreateAsync(user, userToPost.Password);
             if (result.Succeeded)
             {
                 // User created successfully
                 // Here you trust the model because only an Admin reached this point
-                await _userManager.AddToRoleAsync(user, systemUserToPost.RoleName);
+                await _userManager.AddToRoleAsync(user, userToPost.RoleName);
                 return Ok();
             }
             //return BadRequest(result.Errors.Select(e => e.Description));

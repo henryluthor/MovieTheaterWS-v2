@@ -2,6 +2,6 @@
 {
     public class AdminRegistrationDTO: UserRegistrationBaseDTO
     {
-        string RoleName { get; set; } = "Customer";
+        public string RoleName { get; set; } = "Customer";
     }
 }

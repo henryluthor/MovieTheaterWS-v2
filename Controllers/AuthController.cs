@@ -52,7 +52,7 @@ namespace MovieTheaterWS_v2.Controllers
                     Path = "/",
                     Expires = DateTime.UtcNow.AddHours(cookieExpirationHours),
                     IsEssential = true,
-                    SameSite = SameSiteMode.Lax, // SameSite = SameSiteMode.Strict o Lax to avoid Cross-Site Request Forgery (CSRF)
+                    SameSite = SameSiteMode.None, // SameSite = SameSiteMode.Strict o Lax to avoid Cross-Site Request Forgery (CSRF), I am using None to avoid problems from having backend and frontend as cross-origin
                 };
                 Response.Cookies.Append("token", token, cookieOptions);
                 Response.Cookies.Append("email", loginRequest.Email);

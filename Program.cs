@@ -5,6 +5,7 @@ using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Data;
 using MovieTheaterWS_v2.Models;
+using System.Security.Claims;
 using System.Text;
 
 
@@ -37,7 +38,12 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 //    options.DefaultChallengeScheme = "Cookies";
 //});
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
     .AddJwtBearer(options =>
 {
     // JWT validation setting (SecretKey, etc.)
@@ -61,7 +67,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
         // ¡VITAL FOR ADMIN ROLE! 
         // Map the Microsoft long claim name to the Roles system
-        RoleClaimType = "http://microsoft.com"
+        //RoleClaimType = "http://microsoft.com" // Short claim name, gives me trouble
+        RoleClaimType = ClaimTypes.Role, // This is equivalent to "http://microsoft.com"
+        NameClaimType = ClaimTypes.Name
     };
 
     // The "bridge" to get the token from the cookie
@@ -90,7 +98,7 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthorization(options =>
 {
-    // Creating a polic that demands the "Admin" role
+    // Creating a policy that demands the "Admin" role
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
 });
 

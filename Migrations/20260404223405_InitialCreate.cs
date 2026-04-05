@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace MovieTheaterWS_v2.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialIdentity : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -52,35 +52,35 @@ namespace MovieTheaterWS_v2.Migrations
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "Complex",
-                columns: table => new
-                {
-                    idComplex = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Complex", x => x.idComplex);
-                });
+            //migrationBuilder.CreateTable(
+            //    name: "Complex",
+            //    columns: table => new
+            //    {
+            //        idComplex = table.Column<int>(type: "int", nullable: false)
+            //            .Annotation("SqlServer:Identity", "1, 1"),
+            //        name = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false)
+            //    },
+            //    constraints: table =>
+            //    {
+            //        table.PrimaryKey("PK_Complex", x => x.idComplex);
+            //    });
 
-            migrationBuilder.CreateTable(
-                name: "Movie",
-                columns: table => new
-                {
-                    idMovie = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
-                    Year = table.Column<int>(type: "int", nullable: true, comment: "Year of release of the movie."),
-                    Runtime = table.Column<int>(type: "int", nullable: true, comment: "Runtime in minutes."),
-                    Genre = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
-                    IMDBId = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true, comment: "Movie id from www.imdb.com")
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Movie", x => x.idMovie);
-                });
+            //migrationBuilder.CreateTable(
+            //    name: "Movie",
+            //    columns: table => new
+            //    {
+            //        idMovie = table.Column<int>(type: "int", nullable: false)
+            //            .Annotation("SqlServer:Identity", "1, 1"),
+            //        Title = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: false),
+            //        Year = table.Column<int>(type: "int", nullable: true, comment: "Year of release of the movie."),
+            //        Runtime = table.Column<int>(type: "int", nullable: true, comment: "Runtime in minutes."),
+            //        Genre = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true),
+            //        IMDBId = table.Column<string>(type: "varchar(50)", unicode: false, maxLength: 50, nullable: true, comment: "Movie id from www.imdb.com")
+            //    },
+            //    constraints: table =>
+            //    {
+            //        table.PrimaryKey("PK_Movie", x => x.idMovie);
+            //    });
 
             migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
@@ -188,21 +188,21 @@ namespace MovieTheaterWS_v2.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "ComplexMovie",
-                columns: table => new
-                {
-                    idComplex = table.Column<int>(type: "int", nullable: false),
-                    idMovie = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.ForeignKey(
-                        name: "FK_ComplexMovie_Movie",
-                        column: x => x.idMovie,
-                        principalTable: "Movie",
-                        principalColumn: "idMovie");
-                });
+            //migrationBuilder.CreateTable(
+            //    name: "ComplexMovie",
+            //    columns: table => new
+            //    {
+            //        idComplex = table.Column<int>(type: "int", nullable: false),
+            //        idMovie = table.Column<int>(type: "int", nullable: false)
+            //    },
+            //    constraints: table =>
+            //    {
+            //        table.ForeignKey(
+            //            name: "FK_ComplexMovie_Movie",
+            //            column: x => x.idMovie,
+            //            principalTable: "Movie",
+            //            principalColumn: "idMovie");
+            //    });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
@@ -243,10 +243,10 @@ namespace MovieTheaterWS_v2.Migrations
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
 
-            migrationBuilder.CreateIndex(
-                name: "IX_ComplexMovie_idMovie",
-                table: "ComplexMovie",
-                column: "idMovie");
+            //migrationBuilder.CreateIndex(
+            //    name: "IX_ComplexMovie_idMovie",
+            //    table: "ComplexMovie",
+            //    column: "idMovie");
         }
 
         /// <inheritdoc />
