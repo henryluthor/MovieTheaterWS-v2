@@ -8,6 +8,6 @@ namespace MovieTheaterWS_v2.Classes
     public class LoginResponse
     {
         public bool Authenticated { get; set; } = false;
-        public string? Email { get; set; } = null!;        
+        public string? Email { get; set; } = null!;
     }
 }

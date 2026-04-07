@@ -143,6 +143,8 @@ app.UseCors("AllowCredentials");
 app.UseAuthentication();
 app.UseAuthorization();
 
+app.UseDeveloperExceptionPage();
+
 // Add routes and controllers
 app.MapControllers();
 

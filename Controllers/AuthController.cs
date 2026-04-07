@@ -1,12 +1,13 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+
 
 namespace MovieTheaterWS_v2.Controllers
 {
@@ -57,6 +58,9 @@ namespace MovieTheaterWS_v2.Controllers
                 Response.Cookies.Append("token", token, cookieOptions);
                 Response.Cookies.Append("email", loginRequest.Email);
 
+                var emailForResponse = user.Email;
+                var roles = await _userManager.GetRolesAsync(user);
+
                 // This is how you set text in the body of the HttpResponse
                 //await Response.WriteAsync("Hello, this is the HttpResponse body");
                 //return Ok();
@@ -76,17 +80,18 @@ namespace MovieTheaterWS_v2.Controllers
                 //    Name = "Juan",
                 //    Age = 30
                 //};
-                //return Ok(persona);
-
-                LoginResponse loginResponse = new LoginResponse
-                {
-                    Authenticated = true,
-                    Email = loginRequest.Email
-                };
+                //return Ok(persona);                
 
                 //return Ok(new { authenticated = true });
                 //return Ok(new {token});
-                return Ok(loginResponse);
+
+                return Ok(new
+                {
+                    Email = emailForResponse,
+                    Roles = roles,
+                    IsAuthenticated = true,
+                    authenticated = true
+                });
                 
             }
 
@@ -99,9 +104,6 @@ namespace MovieTheaterWS_v2.Controllers
         [HttpPost("logout")]
         public IActionResult Logout()
         {
-            // Next 2 lines did not work, that is why they are commented
-            //string token2 = HttpContext.Request.Cookies["token2"];
-            //HttpContext.Response.Cookies.Delete(token2);
 
             var cookieOptions = new CookieOptions
             {
@@ -184,16 +186,13 @@ namespace MovieTheaterWS_v2.Controllers
         {
             // You do not need to read the cookie manually with HttpContext.Request.Cookies["token"]
             // The middleware already did it for you and filled the object User.
-            //LoginResponse loginResponse = new LoginResponse
-            //{
-            //    Authenticated = true
-            //};
 
             return Ok(new
             {
-                email = User.FindFirstValue(ClaimTypes.Email),
-                role = User.FindFirstValue(ClaimTypes.Role),
-                isAuthenticated = true,
+                Email = User.FindFirstValue(ClaimTypes.Email),
+                //Role = User.FindFirstValue(ClaimTypes.Role),
+                Roles = User.FindAll(ClaimTypes.Role).Select(c => c.Value).ToList(),
+                IsAuthenticated = true,
                 Authenticated = true
             });
         }
