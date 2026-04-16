@@ -25,11 +25,11 @@ builder.Services.AddDbContext<MovietheaterContext>(options => options.UseSqlServ
 builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
+    options.User.RequireUniqueEmail = true;
 })
     .AddEntityFrameworkStores<MovietheaterContext>()
-    .AddDefaultTokenProviders() // Necessary for password recovery
-                                //.AddDefaultUI(); // This adds the Login/Register pages if you need them, not necessary if my Web API (without Microsoft login pages)
-    ;
+    .AddDefaultTokenProviders(); // Necessary for password recovery
+
 
 
 //builder.Services.AddAuthentication(options =>

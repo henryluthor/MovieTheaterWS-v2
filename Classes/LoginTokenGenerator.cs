@@ -10,7 +10,7 @@ namespace MovieTheaterWS_v2.Classes
 {
     public class LoginTokenGenerator
     {
-        private int tokenExpirationMinutes = 3;
+        private int tokenExpirationMinutes = 15;
 
         private readonly UserManager<User> _userManager;
         private readonly IConfiguration _configuration;

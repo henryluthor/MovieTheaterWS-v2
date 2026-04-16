@@ -16,18 +16,12 @@ namespace MovieTheaterWS_v2.Controllers
     public class AuthController : ControllerBase
     {
         private int cookieExpirationHours = 24;
-        
-        //private readonly MovietheaterContext _context;
-        //private readonly IConfiguration _configuration;
 
         private readonly LoginTokenGenerator _tokenGenerator;
         private readonly UserManager<User> _userManager;
 
         public AuthController(LoginTokenGenerator tokenGenerator, UserManager<User> userManager)
         {
-            //_context = context;
-            //_configuration = configuration;
-
             _tokenGenerator = tokenGenerator;
             _userManager = userManager;
         }
