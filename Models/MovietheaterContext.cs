@@ -33,6 +33,14 @@ public partial class MovietheaterContext : IdentityDbContext<User>
 
         modelBuilder.UseCollation("SQL_Latin1_General_CP1_CI_AI");
 
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(256); ;
+            entity.Property(e => e.NormalizedEmail).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.UserName).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.NormalizedUserName).IsRequired().HasMaxLength(256);
+        });
+
         modelBuilder.Entity<Complex>(entity =>
         {
             entity.HasKey(e => e.IdComplex);

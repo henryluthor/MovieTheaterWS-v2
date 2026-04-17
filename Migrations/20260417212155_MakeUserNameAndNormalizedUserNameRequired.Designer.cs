@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using MovieTheaterWS_v2.Models;
 
@@ -11,9 +12,11 @@ using MovieTheaterWS_v2.Models;
 namespace MovieTheaterWS_v2.Migrations
 {
     [DbContext(typeof(MovietheaterContext))]
-    partial class MovietheaterContextModelSnapshot : ModelSnapshot
+    [Migration("20260417212155_MakeUserNameAndNormalizedUserNameRequired")]
+    partial class MakeUserNameAndNormalizedUserNameRequired
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

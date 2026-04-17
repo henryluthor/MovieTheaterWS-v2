@@ -24,10 +24,10 @@ namespace MovieTheaterWS_v2.Controllers
 
         // GET: api/<SystemUserController>
         [HttpGet]
-        public async Task<List<User>> Get()
+        public async Task<List<UserResponseDTO>> Get()
         {
-            //return await _context.Systemusers.ToListAsync();
-            return await _context.Users.ToListAsync();
+            //return await _context.Users.ToListAsync(); // This is not right because it returns everything, including sensitive information
+            return await _context.Users.Select(u => new UserResponseDTO { Email = u.Email! }).ToListAsync();
         }
 
         // Deprecated since using AspNetCore.Identity
@@ -105,8 +105,8 @@ namespace MovieTheaterWS_v2.Controllers
 
 
         [Authorize(Roles = "Admin")]
-        [HttpPost("create-admin-user")]
-        public async Task<IActionResult> CreateAdminUser([FromBody] AdminRegistrationDTO userToPost)
+        [HttpPost("create-user")]
+        public async Task<IActionResult> CreateUser([FromBody] UserRegistrationDTO userToPost)
         {
             var user = new User
             {
