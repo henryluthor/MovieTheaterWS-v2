@@ -19,11 +19,13 @@ namespace MovieTheaterWS_v2.Controllers
 
         private readonly LoginTokenGenerator _tokenGenerator;
         private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
 
-        public AuthController(LoginTokenGenerator tokenGenerator, UserManager<User> userManager)
+        public AuthController(LoginTokenGenerator tokenGenerator, UserManager<User> userManager, SignInManager<User> signInManager)
         {
             _tokenGenerator = tokenGenerator;
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         
@@ -33,10 +35,17 @@ namespace MovieTheaterWS_v2.Controllers
         {
 
             var user = await _userManager.FindByEmailAsync(loginRequest.Email);
-
-            if(user != null && await _userManager.CheckPasswordAsync(user, loginRequest.Password))
+            if (user == null)
             {
-                // Call my service class method
+                return Unauthorized();                
+            }
+
+            // Validating the password using SignInManager to enable lockout
+            // The third parameter 'true' activates the failed attempts counter
+            var result = await _signInManager.CheckPasswordSignInAsync(user, loginRequest.Password, lockoutOnFailure: true);
+
+            if(result.Succeeded)
+            {
                 var token = await _tokenGenerator.GenerateToken(user);
 
                 var cookieOptions = new CookieOptions
@@ -49,11 +58,19 @@ namespace MovieTheaterWS_v2.Controllers
                     IsEssential = true,
                     SameSite = SameSiteMode.None, // SameSite = SameSiteMode.Strict o Lax to avoid Cross-Site Request Forgery (CSRF), I am using None to avoid problems from having backend and frontend as cross-origin
                 };
+
                 Response.Cookies.Append("token", token, cookieOptions);
                 Response.Cookies.Append("email", loginRequest.Email);
 
-                var emailForResponse = user.Email;
                 var roles = await _userManager.GetRolesAsync(user);
+
+                return Ok(new
+                {
+                    Email = user.Email,
+                    Roles = roles,
+                    IsAuthenticated = true,
+                    authenticated = true
+                });
 
                 // This is how you set text in the body of the HttpResponse
                 //await Response.WriteAsync("Hello, this is the HttpResponse body");
@@ -78,17 +95,16 @@ namespace MovieTheaterWS_v2.Controllers
 
                 //return Ok(new { authenticated = true });
                 //return Ok(new {token});
-
-                return Ok(new
-                {
-                    Email = emailForResponse,
-                    Roles = roles,
-                    IsAuthenticated = true,
-                    authenticated = true
-                });
-                
             }
 
+
+            // Case: User locked out due to too many failed attempts
+            if (result.IsLockedOut)
+            {
+                return StatusCode(StatusCodes.Status423Locked, "The account is temporarily locked due to too many failed attempts.");
+            }
+
+            // Case: Incorrect password (but not locked out yet)
             return Unauthorized();
 
         }

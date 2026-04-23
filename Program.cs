@@ -26,6 +26,10 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
     options.User.RequireUniqueEmail = true;
+    // Lockout settings
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15); // Lockout duration
+    options.Lockout.MaxFailedAccessAttempts = 5; // Attempts before lockout
+    options.Lockout.AllowedForNewUsers = true; // Apply to new users by default
 })
     .AddEntityFrameworkStores<MovietheaterContext>()
     .AddDefaultTokenProviders(); // Necessary for password recovery
