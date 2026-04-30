@@ -39,6 +39,8 @@ public partial class MovietheaterContext : IdentityDbContext<User>
             entity.Property(e => e.NormalizedEmail).IsRequired().HasMaxLength(256);
             entity.Property(e => e.UserName).IsRequired().HasMaxLength(256);
             entity.Property(e => e.NormalizedUserName).IsRequired().HasMaxLength(256);
+
+            entity.HasQueryFilter(u => !u.IsDeleted);
         });
 
         modelBuilder.Entity<Complex>(entity =>

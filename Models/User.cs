@@ -12,6 +12,8 @@ public partial class User : IdentityUser
 
     public string? LastName { get; set; }
 
+    public bool IsDeleted { get; set; }
+
     //public string Email { get; set; } = null!;
 
     //public string PasswordHash { get; set; } = null!;

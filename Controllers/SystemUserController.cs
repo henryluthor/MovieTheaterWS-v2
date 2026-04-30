@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
+using System.Threading.Tasks;
 //using System.Security.Cryptography;
 //using System.Text;
 
@@ -27,7 +28,30 @@ namespace MovieTheaterWS_v2.Controllers
         public async Task<List<UserResponseDTO>> Get()
         {
             //return await _context.Users.ToListAsync(); // This is not right because it returns everything, including sensitive information
-            return await _context.Users.Select(u => new UserResponseDTO { Email = u.Email! }).ToListAsync();
+            return await _context.Users.Select(u => new UserResponseDTO { Id = u.Id, Email = u.Email! }).ToListAsync();
+        }
+
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> Get(string id) // Former name: EditUser
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null) return NotFound();
+
+            //List<string> userToEditRoles = (await _userManager.GetRolesAsync(user)).ToList();
+            List<string> userToEditRoles = [.. await _userManager.GetRolesAsync(user)];
+
+            UserResponseDTO userResponseDTO = new UserResponseDTO
+            {
+                Id = id,
+                Email = user.Email!,
+                Roles = userToEditRoles
+            };
+
+            return Ok(userResponseDTO);
         }
 
         // Deprecated since using AspNetCore.Identity
@@ -78,14 +102,17 @@ namespace MovieTheaterWS_v2.Controllers
         //}
 
 
-        [AllowAnonymous]
+        //[AllowAnonymous]
         [HttpPost("register-customer")]
         public async Task<IActionResult> RegisterCustomer([FromBody] CustomerRegistrationDTO userToPost)
         {
             var user = new User
             {
                 UserName = userToPost.Email,
-                Email = userToPost.Email
+                Email = userToPost.Email,
+                FirstName = userToPost.FirstName,
+                LastName = userToPost.LastName,
+                IsDeleted = false
             };
 
             // It is not necessary to manually hash the password, CreateAsync does it
@@ -111,7 +138,10 @@ namespace MovieTheaterWS_v2.Controllers
             var user = new User
             {
                 UserName = userToPost.Email,
-                Email = userToPost.Email
+                Email = userToPost.Email,
+                FirstName = userToPost.FirstName,
+                LastName = userToPost.LastName,
+                IsDeleted = false
             };
 
             // It is not necessary to manually hash the password, CreateAsync does it
@@ -120,12 +150,13 @@ namespace MovieTheaterWS_v2.Controllers
             {
                 // User created successfully
                 // Here you trust the model because only an Admin reached this point
-                await _userManager.AddToRoleAsync(user, userToPost.RoleName);
+                await _userManager.AddToRolesAsync(user, userToPost.Roles);
                 return Ok();
             }
             //return BadRequest(result.Errors.Select(e => e.Description));
             return BadRequest(result.Errors);
         }
+
 
     }
 }
