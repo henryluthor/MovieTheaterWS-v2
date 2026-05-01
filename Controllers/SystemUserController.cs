@@ -2,8 +2,10 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
+using System.Security.Claims;
 using System.Threading.Tasks;
 //using System.Security.Cryptography;
 //using System.Text;
@@ -24,6 +26,7 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
         // GET: api/<SystemUserController>
+        [Authorize(Roles = "Admin")]
         [HttpGet]
         public async Task<List<UserResponseDTO>> Get()
         {
@@ -32,27 +35,47 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
 
+        [Authorize]
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(string id) // Former name: EditUser
+        public async Task<IActionResult> Get(string id)
         {
             if (string.IsNullOrEmpty(id)) return NotFound();
 
-            var user = await _userManager.FindByIdAsync(id);
+            // Check if user who made the request has role Admin
+            var isRequestUserAdmin = User.IsInRole("Admin");
 
-            if (user == null) return NotFound();
+            // Check id of user who made the request
+            //var requestUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Another way of doing the same as the line above
+            var requestUserId = _userManager.GetUserId(User);
 
-            //List<string> userToEditRoles = (await _userManager.GetRolesAsync(user)).ToList();
-            List<string> userToEditRoles = [.. await _userManager.GetRolesAsync(user)];
+            var isSameUser = requestUserId == id;
 
-            UserResponseDTO userResponseDTO = new UserResponseDTO
+            // If user who made the request has role Admin or has the same id that is being consulted search data
+            if (isRequestUserAdmin || isSameUser)
             {
-                Id = id,
-                Email = user.Email!,
-                Roles = userToEditRoles
-            };
+                var userToLookFor = await _userManager.FindByIdAsync(id);
 
-            return Ok(userResponseDTO);
+                if (userToLookFor == null) return NotFound();
+
+                //List<string> userToLookForRoles = (await _userManager.GetRolesAsync(userToLookFor)).ToList();
+                List<string> userToLookForRoles = [.. await _userManager.GetRolesAsync(userToLookFor)];
+
+                UserResponseDTO userResponseDTO = new UserResponseDTO
+                {
+                    Id = id,
+                    Email = userToLookFor.Email!,
+                    Roles = userToLookForRoles
+                };
+
+                return Ok(userResponseDTO);
+            }
+
+            return Forbid();
+            
         }
+
+        
 
         // Deprecated since using AspNetCore.Identity
         // POST: api/<SystemUserController>
@@ -75,7 +98,7 @@ namespace MovieTheaterWS_v2.Controllers
         //    {
         //        try
         //        {
-        //            // Hash user password
+        //            // Hash userToLookFor password
         //            SHA512 hashSvc = SHA512.Create();
         //            byte[] hash = hashSvc.ComputeHash(Encoding.UTF8.GetBytes(systemUserToPost.Password));
 
@@ -94,7 +117,7 @@ namespace MovieTheaterWS_v2.Controllers
         //        }
         //        catch (Exception ex)
         //        {
-        //            genRensponse.Message = "There was an error while trying to register the user. " + ex.Message;
+        //            genRensponse.Message = "There was an error while trying to register the userToLookFor. " + ex.Message;
         //        }
         //    }
 
@@ -157,6 +180,172 @@ namespace MovieTheaterWS_v2.Controllers
             return BadRequest(result.Errors);
         }
 
+
+
+        [Authorize]
+        [HttpPut("update-customer/{id}")]
+        public async Task<IActionResult> UpdateCustomer(string id, [FromBody] UserUpdateDTO userUpdateDTO)
+        {
+            if(string.IsNullOrEmpty(id)) return NotFound();
+
+            // Check if user who made the request has role Admin
+            var isRequestUserAdmin = User.IsInRole("Admin");
+
+            // Check id of user who made the request
+            //var requestUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Another way of doing the same as the line above
+            var requestUserId = _userManager.GetUserId(User);
+
+            var isSameUser = requestUserId == id;
+
+            // If user who made the request has role Admin or has the same id that is being consulted update user
+            if (isRequestUserAdmin || isSameUser)
+            {
+                var user = await _userManager.FindByIdAsync(id);
+
+                if (user == null) return NotFound($"User with ID {id} not found.");
+
+                user.Email = userUpdateDTO.Email;
+
+                var result = await _userManager.UpdateAsync(user);
+                // To change password
+                // _userManager.ChangePasswordAsync(user, oldPassword, newPassword).
+                // to update user roles
+                // _userManager.AddToRoleAsync o _userManager.RemoveFromRoleAsync
+
+                if (result.Succeeded)
+                {
+                    return Ok(new { message = "User updated successfully." });
+                }
+
+                return BadRequest(result.Errors);
+            }
+
+            return Forbid();
+            
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("update-user/{id}")]
+        public async Task<IActionResult> UpdateUser(string id, [FromBody] UserUpdateDTO userUpdateDTO)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null) return NotFound();
+
+            user.Email = userUpdateDTO.Email;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok(new { message = "User updated successfully." });
+            }
+
+            return BadRequest(result.Errors);
+        }
+
+
+        [Authorize]
+        [HttpDelete("delete-customer/{id}")]
+        public async Task<IActionResult> DeleteCustomer(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            // Check if user who made the request has role Admin
+            var isRequestUserAdmin = User.IsInRole("Admin");
+
+            // Check id of user who made the request
+            //var requestUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            // Another way of doing the same as the line above
+            var requestUserId = _userManager.GetUserId(User);
+
+            var isSameUser = requestUserId == id;
+
+            // If user who made the request has role Admin or has the same id that is being consulted delete user
+            if (isRequestUserAdmin || isSameUser)
+            {
+                var user = await _userManager.FindByIdAsync(id);
+
+                if (user == null) return NotFound();
+
+                user.IsDeleted = true;
+                // IMPORTANT: Block access
+                // This prevent the user from logging in
+                user.LockoutEnabled = true;
+                user.LockoutEnd = DateTimeOffset.MaxValue;
+
+                var result = await _userManager.UpdateAsync(user);
+
+                if(result.Succeeded)
+                {
+                    return NoContent();
+                }
+
+                return BadRequest(result.Errors);
+            }
+
+            return Forbid();
+
+        }
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("delete-user/{id}")]
+        public async Task<IActionResult> DeleteUser(string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _userManager.FindByIdAsync(id);
+
+            if (user == null) return NotFound();
+
+            user.IsDeleted = true;
+            // IMPORTANT: Block access
+            // This prevent the user from logging in
+            user.LockoutEnabled = true;
+            user.LockoutEnd = DateTimeOffset.MaxValue;
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return NoContent();
+            }
+
+            return BadRequest(result.Errors);
+        }
+
+
+
+        [Authorize(Roles = "Admin")]
+        [HttpPost("restore/{id}")]
+        public async Task<IActionResult> Restore (string id)
+        {
+            if (string.IsNullOrEmpty(id)) return NotFound();
+
+            var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null) return NotFound("User does not exist in database.");
+
+            if (!user.IsDeleted) return BadRequest("User is already active.");
+
+            // Restore fields
+            user.IsDeleted = false;
+            user.LockoutEnd = null; // Remove access block
+
+            var result = await _userManager.UpdateAsync(user);
+
+            if (result.Succeeded)
+            {
+                return Ok("User restored successfully.");
+            }
+
+            return BadRequest(result.Errors);
+        }
 
     }
 }
