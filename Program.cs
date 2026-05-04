@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -36,13 +37,6 @@ builder.Services.AddIdentity<User, IdentityRole>(options =>
 
 
 
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultAuthenticateScheme = "Cookies";
-//    options.DefaultChallengeScheme = "Cookies";
-//});
-
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -100,10 +94,14 @@ builder.Services.AddCors(options =>
     );
 });
 
+// Register handler
+builder.Services.AddSingleton<IAuthorizationHandler, AdminOrOwnerHandler>();
+
 builder.Services.AddAuthorization(options =>
 {
     // Creating a policy that demands the "Admin" role
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+    options.AddPolicy("AdminOrOwnerPolicy", policy => policy.Requirements.Add(new AdminOrOwnerRequirement()));
 });
 
 

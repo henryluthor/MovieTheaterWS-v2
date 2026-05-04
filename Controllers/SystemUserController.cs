@@ -2,13 +2,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
+using MovieTheaterWS_v2.Services;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
-using System.Security.Claims;
-using System.Threading.Tasks;
+
 //using System.Security.Cryptography;
 //using System.Text;
+//using System.Security.Claims;
 
 namespace MovieTheaterWS_v2.Controllers
 {
@@ -18,11 +18,19 @@ namespace MovieTheaterWS_v2.Controllers
     {
         private readonly MovietheaterContext _context;
         private readonly UserManager<User> _userManager;
+        private readonly SystemUserService _systemUserService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public SystemUserController(MovietheaterContext context, UserManager<User> userManager)
+        public SystemUserController(
+            MovietheaterContext context,
+            UserManager<User> userManager,
+            SystemUserService systemUserService,
+            IAuthorizationService authorizationService)
         {
             _context = context;
             _userManager = userManager;
+            _systemUserService = systemUserService;
+            _authorizationService = authorizationService;
         }
 
         // GET: api/<SystemUserController>
@@ -72,10 +80,10 @@ namespace MovieTheaterWS_v2.Controllers
             }
 
             return Forbid();
-            
+
         }
 
-        
+
 
         // Deprecated since using AspNetCore.Identity
         // POST: api/<SystemUserController>
@@ -186,7 +194,7 @@ namespace MovieTheaterWS_v2.Controllers
         [HttpPut("update-customer/{id}")]
         public async Task<IActionResult> UpdateCustomer(string id, [FromBody] UserUpdateDTO userUpdateDTO)
         {
-            if(string.IsNullOrEmpty(id)) return NotFound();
+            if (string.IsNullOrEmpty(id)) return NotFound();
 
             // Check if user who made the request has role Admin
             var isRequestUserAdmin = User.IsInRole("Admin");
@@ -222,7 +230,7 @@ namespace MovieTheaterWS_v2.Controllers
             }
 
             return Forbid();
-            
+
         }
 
 
@@ -242,6 +250,14 @@ namespace MovieTheaterWS_v2.Controllers
 
             if (result.Succeeded)
             {
+                // Update roles
+                // Get current roles
+                var prviousRoles = await _userManager.GetRolesAsync(user);
+                // Remove current roles
+                await _userManager.RemoveFromRolesAsync(user, prviousRoles);
+                // Add new roles
+                await _userManager.AddToRolesAsync(user, userUpdateDTO.Roles);
+
                 return Ok(new { message = "User updated successfully." });
             }
 
@@ -253,6 +269,11 @@ namespace MovieTheaterWS_v2.Controllers
         [HttpDelete("delete-customer/{id}")]
         public async Task<IActionResult> DeleteCustomer(string id)
         {
+            // Things to consider
+            // Al eliminar cambiar información específica del usuario a información generica
+            // por ejemplo cambiar el mail a usuario@correo.com_deleted_guid
+            // No solo cambiar mail sino tambien normalizedimail. username y normalizedusername
+
             if (string.IsNullOrEmpty(id)) return NotFound();
 
             // Check if user who made the request has role Admin
@@ -280,7 +301,7 @@ namespace MovieTheaterWS_v2.Controllers
 
                 var result = await _userManager.UpdateAsync(user);
 
-                if(result.Succeeded)
+                if (result.Succeeded)
                 {
                     return NoContent();
                 }
@@ -297,6 +318,11 @@ namespace MovieTheaterWS_v2.Controllers
         [HttpDelete("delete-user/{id}")]
         public async Task<IActionResult> DeleteUser(string id)
         {
+            // Things to consider
+            // Al eliminar cambiar información específica del usuario a información generica
+            // por ejemplo cambiar el mail a usuario@correo.com_deleted_guid
+            // No solo cambiar mail sino tambien normalizedimail. username y normalizedusername
+
             if (string.IsNullOrEmpty(id)) return NotFound();
 
             var user = await _userManager.FindByIdAsync(id);
@@ -319,33 +345,69 @@ namespace MovieTheaterWS_v2.Controllers
             return BadRequest(result.Errors);
         }
 
+        //[Authorize]
+        //[HttpDelete("{id}")]
+        //public async Task<IActionResult> Delete(string id)
+        //{
+        //    if (string.IsNullOrEmpty(id)) return BadRequest(new { message = "User ID is obligatory." });
+
+        //    var result = await _systemUserService.SoftDeleteAndAnonymizeAsync(id);
+
+        //    if (result.Succeeded)
+        //    {
+        //        return Ok( new { message = "User deleted successfully."});
+        //    }
+
+        //    return BadRequest( new {
+        //        message = "User could not be deleted.",
+        //        errors = result.Errors
+        //    });
+        //}
 
 
-        [Authorize(Roles = "Admin")]
-        [HttpPost("restore/{id}")]
-        public async Task<IActionResult> Restore (string id)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> Delete(string id)
         {
-            if (string.IsNullOrEmpty(id)) return NotFound();
+            // Validate policy against received ID
+            var authResult = await _authorizationService.AuthorizeAsync(User, id, "AdminOrOwnerPolicy");
 
-            var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id);
-
-            if (user == null) return NotFound("User does not exist in database.");
-
-            if (!user.IsDeleted) return BadRequest("User is already active.");
-
-            // Restore fields
-            user.IsDeleted = false;
-            user.LockoutEnd = null; // Remove access block
-
-            var result = await _userManager.UpdateAsync(user);
-
-            if (result.Succeeded)
+            if (authResult.Succeeded)
             {
-                return Ok("User restored successfully.");
+                await _systemUserService.SoftDeleteAndAnonymizeAsync(id);
+                return NoContent();
             }
 
-            return BadRequest(result.Errors);
+            return Forbid();
         }
+
+
+        // This action is deprecated in order to follow Personal Data Protection laws
+        // Snippet kept for future reference
+        //[Authorize(Roles = "Admin")]
+        //[HttpPost("restore/{id}")]
+        //public async Task<IActionResult> Restore (string id)
+        //{
+        //    if (string.IsNullOrEmpty(id)) return NotFound();
+
+        //    var user = await _context.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id);
+
+        //    if (user == null) return NotFound("User does not exist in database.");
+
+        //    if (!user.IsDeleted) return BadRequest("User is already active.");
+
+        //    // Restore fields
+        //    user.IsDeleted = false;
+        //    user.LockoutEnd = null; // Remove access block
+
+        //    var result = await _userManager.UpdateAsync(user);
+
+        //    if (result.Succeeded)
+        //    {
+        //        return Ok("User restored successfully.");
+        //    }
+
+        //    return BadRequest(result.Errors);
+        //}
 
     }
 }
