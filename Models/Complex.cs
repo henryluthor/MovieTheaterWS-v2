@@ -7,5 +7,5 @@ public partial class Complex
 {
     public int IdComplex { get; set; }
 
-    public string Name { get; set; } = null!;
+    public required string Name { get; set; }
 }

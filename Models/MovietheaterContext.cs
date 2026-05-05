@@ -53,7 +53,8 @@ public partial class MovietheaterContext : IdentityDbContext<User>
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false)
-                .HasColumnName("name");
+                .HasColumnName("name")
+                .IsRequired();
         });
 
         modelBuilder.Entity<ComplexMovie>(entity =>

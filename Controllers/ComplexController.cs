@@ -1,10 +1,12 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
 
 namespace MovieTheaterWS_v2.Controllers
 {
+    [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
     public class ComplexController : ControllerBase
@@ -24,35 +26,33 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
         [HttpPost]
-        public async Task<GenericResponse<Complex>> Post([FromBody] string complexName)
+        public async Task<IActionResult> Post([FromBody] ComplexCreationDTO complexCreationDTO)
         {
-            GenericResponse<Complex> genResponse = new GenericResponse<Complex>();
-            var complexNameSearched = _context.Complexes.Where(c => c.Name == complexName);
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            
+            var complexNameSearched = _context.Complexes.Where(c => c.Name == complexCreationDTO.Name);
 
             // Check if name already exists
-            if (complexNameSearched.Any())
+            if (complexNameSearched.Any()) return BadRequest("There is a complex with that name already.");
+
+            try
             {
-                genResponse.Message = "There is a complex with that name already.";
-            }
-            else
-            {
-                try
+                Complex complex = new Complex
                 {
-                    Complex complex = new Complex();
-                    complex.Name = complexName;
-                    _context.Complexes.Add(complex);
-                    await _context.SaveChangesAsync();
+                    Name = complexCreationDTO.Name,
+                };
+                
+                _context.Complexes.Add(complex);
 
-                    genResponse.Message = "Complex registered successfully.";
-                    genResponse.Data = complex;
-                }
-                catch (Exception ex)
-                { 
-                    genResponse.Message = "There was an error while trying to register the complex. " + ex.Message;
-                }                
+                await _context.SaveChangesAsync();
+
+                return Ok(new { message = "Complex registered successfully." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "There was an error while trying to register the complex. " + ex.Message});
             }
 
-            return genResponse;
         }
         
     }
