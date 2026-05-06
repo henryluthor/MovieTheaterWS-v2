@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
@@ -12,10 +13,12 @@ namespace MovieTheaterWS_v2.Controllers
     public class ComplexController : ControllerBase
     {
         private readonly MovietheaterContext _context;
+        //private readonly IMapper _mapper;
 
         public ComplexController(MovietheaterContext context)
         {
             _context = context;
+            //_mapper = mapper;
         }
 
         // GET: api/<SystemUserController>
@@ -33,7 +36,7 @@ namespace MovieTheaterWS_v2.Controllers
             var complexNameSearched = _context.Complexes.Where(c => c.Name == complexCreationDTO.Name);
 
             // Check if name already exists
-            if (complexNameSearched.Any()) return BadRequest("There is a complex with that name already.");
+            if (complexNameSearched.Any()) return BadRequest( new { message = "There is a complex with that name already." });
 
             try
             {
@@ -41,7 +44,9 @@ namespace MovieTheaterWS_v2.Controllers
                 {
                     Name = complexCreationDTO.Name,
                 };
-                
+
+                //Complex complex = _mapper.Map<Complex>(complexCreationDTO);
+
                 _context.Complexes.Add(complex);
 
                 await _context.SaveChangesAsync();

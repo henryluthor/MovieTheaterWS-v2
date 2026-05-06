@@ -107,7 +107,10 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<LoginTokenGenerator>();
 
+//builder.Services.AddAutoMapper(cfg => {}, typeof(MappingProfile).Assembly);
 
+
+// app.Use... is the middleware pipeline
 var app = builder.Build();
 
 
