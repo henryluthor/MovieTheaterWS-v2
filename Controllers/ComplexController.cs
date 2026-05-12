@@ -1,9 +1,12 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
+using MovieTheaterWS_v2.Services;
+using MovieTheaterWS_v2.Validators;
+using System.Text.RegularExpressions;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MovieTheaterWS_v2.Controllers
 {
@@ -13,12 +16,19 @@ namespace MovieTheaterWS_v2.Controllers
     public class ComplexController : ControllerBase
     {
         private readonly MovietheaterContext _context;
-        //private readonly IMapper _mapper;
+        private readonly UniqueFieldValidator _uniqueFieldValidator;
+        private readonly ComplexService _complexService;
+        
 
-        public ComplexController(MovietheaterContext context)
+        public ComplexController(
+            MovietheaterContext context,
+            UniqueFieldValidator uniqueFieldValidator,
+            ComplexService complexService
+            )
         {
             _context = context;
-            //_mapper = mapper;
+            _uniqueFieldValidator = uniqueFieldValidator;
+            _complexService = complexService;
         }
 
         // GET: api/<SystemUserController>
@@ -28,34 +38,69 @@ namespace MovieTheaterWS_v2.Controllers
             return await _context.Complexes.ToListAsync();
         }
 
+
+        [HttpGet("{id}")]
+        // The following 2 attributes help me keep Swagger automatic documentation benefits
+        [ProducesResponseType(typeof(Complex), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> Get(int id)
+        {
+            var complex = await _context.Complexes.FindAsync(id);
+
+            if (complex == null) return NotFound();
+
+            return Ok(complex);
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ComplexCreationDTO complexCreationDTO)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            
-            var complexNameSearched = _context.Complexes.Where(c => c.Name == complexCreationDTO.Name);
 
-            // Check if name already exists
-            if (complexNameSearched.Any()) return BadRequest( new { message = "There is a complex with that name already." });
+            bool isDuplicate = await _uniqueFieldValidator.IsNameDuplicatedAsync<Complex>(complexCreationDTO.Name);
+
+            if (isDuplicate)
+            {
+                ModelState.AddModelError("Name", "There is a complex with that name already.");
+                return BadRequest(ModelState);
+            }
+            
+            // Deprecated code since using validator class, kept for reference
+            //var complexNameSearched = _context.Complexes.Where(c => c.Name == complexCreationDTO.Name);
+            //// Check if name already exists
+            //if (complexNameSearched.Any()) return BadRequest( new { message = "There is a complex with that name already." });
 
             try
             {
-                Complex complex = new Complex
-                {
-                    Name = complexCreationDTO.Name,
-                };
+                //Complex complex = new Complex
+                //{
+                //    Name = complexCreationDTO.Name,
+                //};
 
-                //Complex complex = _mapper.Map<Complex>(complexCreationDTO);
+                //_context.Complexes.Add(complex);
 
-                _context.Complexes.Add(complex);
+                //await _context.SaveChangesAsync();
 
-                await _context.SaveChangesAsync();
+                //////////////////////////////////////////////////////////////////////////                
 
-                return Ok(new { message = "Complex registered successfully." });
+                Complex complex = await _complexService.ProcessAsync(complexCreationDTO);
+
+                //return Ok(new { message = "Complex registered successfully." });
+                // Returns HTTP 201 (Created) which is good practice when saving
+                return CreatedAtAction(nameof(Post), new { complex, message = "Complex registered successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                // Catches invalid business data errors
+                return BadRequest(new { message = "There was an error while trying to register the complex. " + ex.Message});
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = "There was an error while trying to register the complex. " + ex.Message});
+                // Catches unexpected errors (database crashes, code bugs)
+                // Here you should use a Logger (for example: _logger.LogError(ex, "Error..."))
+                return StatusCode(500, new { message = "An internal error occurred on the server", detail = ex.Message });
+
             }
 
         }

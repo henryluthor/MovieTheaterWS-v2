@@ -6,6 +6,9 @@ using Microsoft.IdentityModel.Tokens;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Data;
 using MovieTheaterWS_v2.Models;
+using MovieTheaterWS_v2.Repositories;
+using MovieTheaterWS_v2.Services;
+using MovieTheaterWS_v2.Validators;
 using System.Security.Claims;
 using System.Text;
 
@@ -61,7 +64,7 @@ builder.Services.AddAuthentication(options =>
 
         // Validate the token is not expired
         ValidateLifetime = true,
-        ClockSkew = TimeSpan.Zero, // Elimina el margen de 5 min por defecto para pruebas exactas
+        ClockSkew = TimeSpan.Zero, // This eliminates the default 5 min window for exact testing
 
         // ¡VITAL FOR ADMIN ROLE! 
         // Map the Microsoft long claim name to the Roles system
@@ -101,13 +104,17 @@ builder.Services.AddAuthorization(options =>
 {
     // Creating a policy that demands the "Admin" role
     options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+
     options.AddPolicy("AdminOrOwnerPolicy", policy => policy.Requirements.Add(new AdminOrOwnerRequirement()));
 });
 
 
 builder.Services.AddScoped<LoginTokenGenerator>();
+builder.Services.AddScoped<SystemUserService>();
+builder.Services.AddScoped<UniqueFieldValidator>();
+builder.Services.AddScoped<ComplexRepository>();
+builder.Services.AddScoped<ComplexService>();
 
-//builder.Services.AddAutoMapper(cfg => {}, typeof(MappingProfile).Assembly);
 
 
 // app.Use... is the middleware pipeline
