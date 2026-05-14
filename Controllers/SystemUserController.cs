@@ -399,7 +399,7 @@ namespace MovieTheaterWS_v2.Controllers
         //    user.IsDeleted = false;
         //    user.LockoutEnd = null; // Remove access block
 
-        //    var result = await _userManager.UpdateAsync(user);
+        //    var result = await _userManager.UpdateAndSaveAsync(user);
 
         //    if (result.Succeeded)
         //    {

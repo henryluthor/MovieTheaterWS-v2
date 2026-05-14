@@ -54,11 +54,11 @@ namespace MovieTheaterWS_v2.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ComplexCreationDTO complexCreationDTO)
+        public async Task<IActionResult> Post([FromBody] ComplexCreationDto complexCreationDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            bool isDuplicate = await _uniqueFieldValidator.IsNameDuplicatedAsync<Complex>(complexCreationDTO.Name);
+            bool isDuplicate = await _uniqueFieldValidator.IsNameDuplicatedAsync<Complex>(complexCreationDto.Name);
 
             if (isDuplicate)
             {
@@ -67,28 +67,22 @@ namespace MovieTheaterWS_v2.Controllers
             }
             
             // Deprecated code since using validator class, kept for reference
-            //var complexNameSearched = _context.Complexes.Where(c => c.Name == complexCreationDTO.Name);
+            //var complexNameSearched = _context.Complexes.Where(c => c.Name == complexCreationDto.Name);
             //// Check if name already exists
             //if (complexNameSearched.Any()) return BadRequest( new { message = "There is a complex with that name already." });
 
             try
             {
-                //Complex complex = new Complex
-                //{
-                //    Name = complexCreationDTO.Name,
-                //};
-
-                //_context.Complexes.Add(complex);
-
-                //await _context.SaveChangesAsync();
-
-                //////////////////////////////////////////////////////////////////////////                
-
-                Complex complex = await _complexService.ProcessAsync(complexCreationDTO);
+                Complex complex = await _complexService.CreateAsync(complexCreationDto);
 
                 //return Ok(new { message = "Complex registered successfully." });
                 // Returns HTTP 201 (Created) which is good practice when saving
-                return CreatedAtAction(nameof(Post), new { complex, message = "Complex registered successfully." });
+                return CreatedAtAction
+                    (
+                    nameof(Get),
+                    new {id = complex.IdComplex},
+                    new { complex, message = "Complex registered successfully." }
+                    );
             }
             catch (ArgumentException ex)
             {
@@ -102,6 +96,38 @@ namespace MovieTheaterWS_v2.Controllers
                 return StatusCode(500, new { message = "An internal error occurred on the server", detail = ex.Message });
 
             }
+
+        }
+
+
+        [HttpPut]
+        public async Task<IActionResult> Put (int id, [FromBody] ComplexUpdateDto complexUpdateDto)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            bool isDuplicate = await _uniqueFieldValidator.IsNameDuplicatedAsync<Complex>(complexUpdateDto.Name);
+
+            if (isDuplicate)
+            {
+                ModelState.AddModelError("Name", "There is a complex with that name already.");
+                return BadRequest(ModelState);
+            }
+
+            try
+            {
+                await _complexService.UpdateAsync(id, complexUpdateDto);
+                return NoContent();
+            }
+            catch(ArgumentException ex)
+            {
+                // Catches invalid business data errors
+                return BadRequest(new { message = "There was an error while trying to update the complex. " + ex.Message });
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, new { message = "An internal error occurred on the server", detail = ex.Message });
+            }
+
 
         }
         
