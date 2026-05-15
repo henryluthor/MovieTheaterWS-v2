@@ -5,8 +5,6 @@ using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
 using MovieTheaterWS_v2.Services;
 using MovieTheaterWS_v2.Validators;
-using System.Text.RegularExpressions;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MovieTheaterWS_v2.Controllers
 {
@@ -62,8 +60,9 @@ namespace MovieTheaterWS_v2.Controllers
 
             if (isDuplicate)
             {
-                ModelState.AddModelError("Name", "There is a complex with that name already.");
-                return BadRequest(ModelState);
+                //ModelState.AddModelError("Name", "There is a complex with that name already.");
+                //return BadRequest(ModelState);
+                return BadRequest( new { message = "There is a complex with that name already." });
             }
             
             // Deprecated code since using validator class, kept for reference
@@ -100,7 +99,7 @@ namespace MovieTheaterWS_v2.Controllers
         }
 
 
-        [HttpPut]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Put (int id, [FromBody] ComplexUpdateDto complexUpdateDto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -109,8 +108,7 @@ namespace MovieTheaterWS_v2.Controllers
 
             if (isDuplicate)
             {
-                ModelState.AddModelError("Name", "There is a complex with that name already.");
-                return BadRequest(ModelState);
+                return BadRequest(new { message = "There is a complex with that name already." });
             }
 
             try
@@ -125,6 +123,8 @@ namespace MovieTheaterWS_v2.Controllers
             }
             catch(Exception ex)
             {
+                // Catches unexpected errors (database crashes, code bugs)
+                // Here you should use a Logger (for example: _logger.LogError(ex, "Error..."))
                 return StatusCode(500, new { message = "An internal error occurred on the server", detail = ex.Message });
             }
 

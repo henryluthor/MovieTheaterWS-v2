@@ -1,5 +1,4 @@
 ﻿using MovieTheaterWS_v2.Models;
-using System.Threading.Tasks;
 
 namespace MovieTheaterWS_v2.Repositories
 {

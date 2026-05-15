@@ -1,7 +1,6 @@
 ﻿using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
 using MovieTheaterWS_v2.Repositories;
-using System.Threading.Tasks;
 
 namespace MovieTheaterWS_v2.Services
 {
