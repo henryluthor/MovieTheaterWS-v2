@@ -16,12 +16,12 @@ namespace MovieTheaterWS_v2.Controllers
             _context = context;
         }
 
-        [HttpGet]
-        public async Task<List<ComplexMovie>> Get()
-        {
-            //return View();
-            return await _context.ComplexMovies.ToListAsync();
-        }
+        //[HttpGet]
+        //public async Task<List<ComplexMovie>> Get()
+        //{
+        //    //return View();
+        //    return await _context.ComplexMovies.ToListAsync();
+        //}
 
         //This method only returns IDs, not very user friendly
         //[HttpGet("{idComplex}")]

@@ -25,4 +25,6 @@ public partial class Movie
     /// Movie id from www.imdb.com
     /// </summary>
     public string? Imdbid { get; set; }
+
+    public virtual ICollection<Complex> Complexes { get; set; } = new List<Complex>();
 }

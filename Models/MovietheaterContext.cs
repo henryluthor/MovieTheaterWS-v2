@@ -17,7 +17,7 @@ public partial class MovietheaterContext : IdentityDbContext<User>
 
     public virtual DbSet<Complex> Complexes { get; set; }
 
-    public virtual DbSet<ComplexMovie> ComplexMovies { get; set; }
+    //public virtual DbSet<ComplexMovie> ComplexMovies { get; set; }
 
     public virtual DbSet<Movie> Movies { get; set; }
 
@@ -55,22 +55,33 @@ public partial class MovietheaterContext : IdentityDbContext<User>
                 .IsUnicode(false)
                 .HasColumnName("name")
                 .IsRequired();
+
+            entity.HasMany(c => c.Movies)
+            .WithMany(m => m.Complexes)
+            .UsingEntity<Dictionary<string, object>>(
+                "CompleMovie",
+                j => j.HasOne<Movie>().WithMany().HasForeignKey("IdMovie"),
+                j => j.HasOne<Complex>().WithMany().HasForeignKey("IdComplex"),
+                j =>
+                {
+                    j.HasKey("IdComplex", "IdMovie");
+                });
         });
 
-        modelBuilder.Entity<ComplexMovie>(entity =>
-        {
-            entity
-                .HasNoKey()
-                .ToTable("ComplexMovie");
+        //modelBuilder.Entity<ComplexMovie>(entity =>
+        //{
+        //    entity
+        //        .HasNoKey()
+        //        .ToTable("ComplexMovie");
 
-            entity.Property(e => e.IdComplex).HasColumnName("idComplex");
-            entity.Property(e => e.IdMovie).HasColumnName("idMovie");
+        //    entity.Property(e => e.IdComplex).HasColumnName("idComplex");
+        //    entity.Property(e => e.IdMovie).HasColumnName("idMovie");
 
-            entity.HasOne(d => d.IdMovieNavigation).WithMany()
-                .HasForeignKey(d => d.IdMovie)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_ComplexMovie_Movie");
-        });
+        //    entity.HasOne(d => d.IdMovieNavigation).WithMany()
+        //        .HasForeignKey(d => d.IdMovie)
+        //        .OnDelete(DeleteBehavior.ClientSetNull)
+        //        .HasConstraintName("FK_ComplexMovie_Movie");
+        //});
 
         modelBuilder.Entity<Movie>(entity =>
         {
