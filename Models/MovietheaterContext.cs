@@ -19,6 +19,8 @@ public partial class MovietheaterContext : IdentityDbContext<User>
 
     //public virtual DbSet<ComplexMovie> ComplexMovies { get; set; }
 
+    public DbSet<Screen> Screens { get; set; }
+
     public virtual DbSet<Movie> Movies { get; set; }
 
 
@@ -82,6 +84,28 @@ public partial class MovietheaterContext : IdentityDbContext<User>
         //        .OnDelete(DeleteBehavior.ClientSetNull)
         //        .HasConstraintName("FK_ComplexMovie_Movie");
         //});
+
+
+        modelBuilder.Entity<Screen>( entity =>
+        {
+            entity.ToTable("Screen");
+            entity.HasKey(e =>e.IdScreen);
+            entity.Property(e => e.IdScreen).HasColumnName("idScreen");
+
+            entity.Property(e => e.Name)
+            .HasMaxLength(50)
+            .IsUnicode(false)
+            .HasColumnName("name")
+            .IsRequired();
+
+            entity.Property(e => e.IdComplex).HasColumnName("idComplex");
+
+            // Setting one-to-many relationship
+            entity.HasOne(s => s.Complex) // One screen has one complex
+            .WithMany(c => c.Screens) // One complex has many screens
+            .HasForeignKey(s => s.IdComplex)
+            .OnDelete(DeleteBehavior.Cascade); // If the complex is deleted, its screens are deleted
+        });
 
         modelBuilder.Entity<Movie>(entity =>
         {
