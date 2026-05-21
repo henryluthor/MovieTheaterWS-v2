@@ -92,7 +92,7 @@ namespace MovieTheaterWS_v2.Controllers
             {
                 // Catches unexpected errors (database crashes, code bugs)
                 // Here you should use a Logger (for example: _logger.LogError(ex, "Error..."))
-                return StatusCode(500, new { message = "An internal error occurred on the server", detail = ex.Message });
+                return StatusCode(500, new { message = "An internal error occurred on the server.", detail = ex.Message });
 
             }
 

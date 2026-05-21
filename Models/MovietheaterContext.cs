@@ -89,8 +89,10 @@ public partial class MovietheaterContext : IdentityDbContext<User>
         modelBuilder.Entity<Screen>( entity =>
         {
             entity.ToTable("Screen");
-            entity.HasKey(e =>e.IdScreen);
+            entity.HasKey(e => e.IdScreen);
             entity.Property(e => e.IdScreen).HasColumnName("idScreen");
+            entity.HasIndex(s => new {s.IdComplex, s.Name})
+            .IsUnique();
 
             entity.Property(e => e.Name)
             .HasMaxLength(50)
