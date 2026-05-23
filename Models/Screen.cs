@@ -18,5 +18,7 @@ namespace MovieTheaterWS_v2.Models
 
         // Navigation Property
         public Complex? Complex { get; set; }
+        
+        public ICollection<Seat> Seats { get; set; } = new List<Seat>();
     }
 }

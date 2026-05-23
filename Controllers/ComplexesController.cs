@@ -11,14 +11,14 @@ namespace MovieTheaterWS_v2.Controllers
     [Authorize(Roles = "Admin")]
     [Route("api/[controller]")]
     [ApiController]
-    public class ComplexController : ControllerBase
+    public class ComplexesController : ControllerBase
     {
         private readonly MovietheaterContext _context;
         private readonly UniqueFieldValidator _uniqueFieldValidator;
         private readonly ComplexService _complexService;
         
 
-        public ComplexController(
+        public ComplexesController(
             MovietheaterContext context,
             UniqueFieldValidator uniqueFieldValidator,
             ComplexService complexService

@@ -37,7 +37,7 @@ public partial class MovietheaterContext : IdentityDbContext<User>
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.Property(e => e.Email).IsRequired().HasMaxLength(256); ;
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(256);
             entity.Property(e => e.NormalizedEmail).IsRequired().HasMaxLength(256);
             entity.Property(e => e.UserName).IsRequired().HasMaxLength(256);
             entity.Property(e => e.NormalizedUserName).IsRequired().HasMaxLength(256);
@@ -88,11 +88,14 @@ public partial class MovietheaterContext : IdentityDbContext<User>
 
         modelBuilder.Entity<Screen>( entity =>
         {
-            entity.ToTable("Screen");
             entity.HasKey(e => e.IdScreen);
-            entity.Property(e => e.IdScreen).HasColumnName("idScreen");
+
+            entity.ToTable("Screen");
+                       
             entity.HasIndex(s => new {s.IdComplex, s.Name})
             .IsUnique();
+
+            entity.Property(e => e.IdScreen).HasColumnName("idScreen");
 
             entity.Property(e => e.Name)
             .HasMaxLength(50)
@@ -109,6 +112,22 @@ public partial class MovietheaterContext : IdentityDbContext<User>
             .OnDelete(DeleteBehavior.Cascade); // If the complex is deleted, its screens are deleted
         });
 
+
+
+        modelBuilder.Entity<Seat>(entity =>
+        {
+            entity.HasKey(e => e.IdSeat);
+
+            entity.ToTable("Seat");            
+
+            // Setting one-to-many relationship
+            entity.HasOne(seat => seat.Screen) // One seat has one screen
+            .WithMany(screen => screen.Seats) // One screen has many seats
+            .HasForeignKey(seat => seat.IdScreen);
+        });
+
+
+
         modelBuilder.Entity<Movie>(entity =>
         {
             entity.HasKey(e => e.IdMovie);
@@ -119,7 +138,7 @@ public partial class MovietheaterContext : IdentityDbContext<User>
             entity.Property(e => e.Genre)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-            entity.Property(e => e.Imdbid)
+            entity.Property(e => e.IdImdb)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasComment("Movie id from www.imdb.com")

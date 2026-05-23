@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
+using MovieTheaterWS_v2.Services;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -12,10 +13,12 @@ namespace MovieTheaterWS_v2.Controllers
     public class MoviesController : ControllerBase
     {
         private readonly MovietheaterContext _context;
+        private readonly MovieService _movieService;
 
-        public MoviesController(MovietheaterContext context)
+        public MoviesController(MovietheaterContext context, MovieService movieService)
         {
             _context = context;
+            _movieService = movieService;
         }
 
         // GET: api/<MoviesController>
@@ -48,8 +51,25 @@ namespace MovieTheaterWS_v2.Controllers
 
         // POST api/<MoviesController>
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<IActionResult> Post([FromBody] MovieDto dto)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
+            try
+            {
+                Movie movie = await _movieService.CreateAsync(dto);
+
+                return CreatedAtAction
+                    (
+                    nameof(Get),
+                    new {id = movie.IdMovie},
+                    new {movie, message = "Movie registered successfully." }
+                    );
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "An internal error occurred on the server.", detail = ex.Message});
+            }
         }
 
         // PUT api/<MoviesController>/5

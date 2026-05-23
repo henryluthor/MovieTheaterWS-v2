@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using MovieTheaterWS_v2.Classes;
 using MovieTheaterWS_v2.Models;
 using MovieTheaterWS_v2.Services;
+using System.Numerics;
 
 namespace MovieTheaterWS_v2.Controllers
 {
@@ -33,6 +34,28 @@ namespace MovieTheaterWS_v2.Controllers
             if (screen == null) return NotFound();
 
             return Ok(screen);
+        }
+
+
+        [HttpGet("~/api/complexes/{idComplex}/screens")]
+        public async Task<ActionResult<IEnumerable<ScreenDto>>> GetScreensByComplex(int idComplex)
+        {
+            // Validate if the complex exists
+            var complexExists = await _context.Complexes.AnyAsync(c => c.IdComplex == idComplex);
+
+            if (!complexExists) return NotFound($"The complex with ID {idComplex} does not exist.");
+
+            // It only brings the screens, avoiding loading the complex data in memory
+            var screens = await _context.Screens
+                .Where(s => s.IdComplex == idComplex)
+                .Select(s => new ScreenDto
+                {
+                    Name = s.Name,
+                    IdComplex = idComplex
+                })
+                .ToListAsync();
+
+            return Ok(screens);
         }
 
 
@@ -76,7 +99,7 @@ namespace MovieTheaterWS_v2.Controllers
             }
         }
 
-        public bool IsDuplicationError(DbUpdateException ex)
+        private bool IsDuplicationError(DbUpdateException ex)
         {
             if(ex.InnerException == null) return false;
 

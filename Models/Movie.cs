@@ -17,14 +17,16 @@ public partial class Movie
     /// <summary>
     /// Runtime in minutes.
     /// </summary>
-    public int? Runtime { get; set; }
+    //public int? Runtime { get; set; }
+    // Removed question mark because it must NOT be null
+    public int Runtime { get; set; }
 
     public string? Genre { get; set; }
 
     /// <summary>
     /// Movie id from www.imdb.com
     /// </summary>
-    public string? Imdbid { get; set; }
+    public string? IdImdb { get; set; }
 
     public virtual ICollection<Complex> Complexes { get; set; } = new List<Complex>();
 }
