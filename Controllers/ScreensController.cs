@@ -50,8 +50,8 @@ namespace MovieTheaterWS_v2.Controllers
                 .Where(s => s.IdComplex == idComplex)
                 .Select(s => new ScreenDto
                 {
-                    Name = s.Name,
-                    IdComplex = idComplex
+                    IdScreen = s.IdScreen,
+                    Name = s.Name
                 })
                 .ToListAsync();
 
@@ -60,7 +60,7 @@ namespace MovieTheaterWS_v2.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Post([FromBody] ScreenDto dto)
+        public async Task<IActionResult> Post([FromBody] ScreenCreationDto dto)
         {
             if(!ModelState.IsValid) return BadRequest(ModelState);
 

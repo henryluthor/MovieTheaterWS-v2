@@ -2,7 +2,7 @@
 {
     public class ScreenDto
     {
-        public required string Name { get; set; }
-        public required int IdComplex { get; set; }
+        public int IdScreen { get; set; }
+        public string Name { get; set; } = string.Empty;
     }
 }

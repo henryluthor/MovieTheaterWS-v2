@@ -13,7 +13,7 @@ namespace MovieTheaterWS_v2.Services
             _screenRepository = screenRepository;
         }
 
-        public async Task<Screen> CreateAsync(ScreenDto dto)
+        public async Task<Screen> CreateAsync(ScreenCreationDto dto)
         {
             // Map
             Screen newScreen = new Screen

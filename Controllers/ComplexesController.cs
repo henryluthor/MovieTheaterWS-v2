@@ -50,6 +50,32 @@ namespace MovieTheaterWS_v2.Controllers
             return Ok(complex);
         }
 
+        [HttpGet("{idComplex}/with-screens")]
+        public async Task<ActionResult<ComplexWithScreensDto>> GetComplexWithScreens(int idComplex)
+        {
+            //var complexAndScreens = await _context.Complexes
+            //    .Include(c => c.Screens) // Loads related screens but risk circular references
+            //    .FirstOrDefaultAsync(c => c.IdComplex == idComplex);
+
+            var complexWithScreensDto = await _context.Complexes
+                .Where(c => c.IdComplex == idComplex)
+                .Select(c => new ComplexWithScreensDto
+                {
+                    IdComplex = c.IdComplex,
+                    Name = c.Name,
+                    Screens = c.Screens.Select(s => new ScreenDto
+                    {
+                        IdScreen = s.IdScreen,
+                        Name = s.Name
+                    }).ToList()
+                })
+                .FirstOrDefaultAsync();
+
+            if (complexWithScreensDto == null) return NotFound($"The complex with ID {idComplex} does not exist.");
+
+            return Ok(complexWithScreensDto);
+        }
+
 
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] ComplexCreationDto complexCreationDto)
